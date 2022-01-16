@@ -34,7 +34,8 @@ At the end of this page, you will se the **Windows installer (64-bit)**.
 * Click in **Close**. 
 
 To make sure that all things are working:
-* Open OM-Sharp, and load om-py;
+* Open OM-Sharp
+* Load om-py;
 * Then go to Help-> Help Patches... -> om-py
 * Then open the path *use-py-inside-om*.
 * Then evaluate the patch!
