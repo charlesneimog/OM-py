@@ -1,16 +1,17 @@
 (:om-lib
 
-(:version 0.6)
+(:version 0.1)
 (:doc "")
 (:author "Charles K. Neimog")
 
  ;;; SOURCE FILES TO LOAD
 
 (:source-files
+      "Sources/package.lisp"
       "Sources/utilities"
       "Sources/py"  
       )
 
 (:symbols 
-      (:packages
-                        (:package (:name "OM-py") (:functions )))))
+      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-mod")
+      (:class "om-py::run-py")))

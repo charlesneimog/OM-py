@@ -15,11 +15,9 @@
 
 (in-package :om)
 
-(mp:process-run-function (string+ "Install om_ckn")
+(mp:process-run-function (string+ "Install om_py")
                  () 
-                 (lambda () (python-cmd-line "pip install om_ckn") nil))
-
-
+                 (lambda () (oa::om-command-line (om::string+ "pip install om_py") nil)))
 
 ;;; ==========================================================================
 
@@ -53,7 +51,7 @@
 \"
 # Here you are work with Python code.
 # PUT_YOUR_CODE_HERE (leave the quotes). For example
-from om_ckn import to_om
+from om_py import to_om
 sum = 2 + 2 
 to_om(sum) # If you want to use something inside OM, you need to print it.
 
@@ -98,7 +96,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
                         (let* (
                               (var (car (cdr lambda-expression)))
                               (code (flat (x-append (list (second (cdr lambda-expression))) (list var)) 1))
-                              (py-code (list `(make-value (quote om2py) (list (list :py-om (format nil ,@code)))))))
+                              (py-code (list `(make-value (quote om-py::om2py) (list (list :py-om (format nil ,@code)))))))
                               `(defun ,(intern (string (compiled-fun-name self)) :om) 
                                               ,var ;;variaveis 
                                               ,@py-code
@@ -107,10 +105,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
                               (setf (error-flag self) t)
                               `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
     (compile (eval function-def))))
-
-
-     ; (format2python (mapcar (lambda (x) `(format2python ,x)) var))
-     ; (code (flat (x-append (list (second (cdr lambda-expression))) (list format2python)) 1))
 
 
 ;;;===================
@@ -306,13 +300,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 (defmethod font-command ((self py-function-editor))
   #'(lambda () (om-lisp::change-text-edit-font (window self))))
 
-;; ========================= PY-RUN Special Boxes =================================================
-
-;; ========================================================================== 
-
-(defun read_from_python (x) 
-    (loop :for y :in (list! x) :collect (read-from-string y)))
-
 ;; ================ Python Code Editor Inside OM =================
 
 (defclass run-py-f (OMProgrammingObject)
@@ -344,7 +331,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
     ";;; The name 'LIST' CANNOT be used as a variable name."
     "(py_var () 
 \"
-from om_ckn import to_om
+from om_py import to_om
 
 list_of_numbers = []
 
@@ -400,7 +387,7 @@ to_om(list_of_numbers)
       (var (car (cdr lambda-expression)))
       (format2python (mapcar (lambda (x) `(format2python ,x)) var))
       (code (flat (x-append (list (second (cdr lambda-expression))) (list format2python)) 1))
-      (py-code (list `(run-py (make-value (quote om2py) (list (list :py-om (format nil ,@code)))))))
+      (py-code (list `(om-py::run-py (make-value (quote om-py::om2py) (list (list :py-om (format nil ,@code)))))))
       (function-def
             (if (and lambda-expression (python-expression-p lambda-expression))
                   (progn (setf (compiled? self) t)
@@ -606,6 +593,9 @@ to_om(list_of_numbers)
   #'(lambda () (om-lisp::change-text-edit-font (window self))))
 
 ;; Add this in the menu
+
+
+(ensure-directories-exist (tmpfile " " :subdirs "\om-py")) ;; Create om-py temp folder
 
 
 (om::omNG-make-package
