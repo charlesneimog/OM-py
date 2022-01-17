@@ -19,5 +19,25 @@ To install Python on Windows you need first download Python 3.9 in the Python we
 
 https://www.python.org/downloads/release/python-399/
 
-At the end of this page, you will se the **Windows installer (64-bit)**. Download it!
+At the end of this page, you will se the **Windows installer (64-bit)**. 
 
+* Download it!
+
+![Python](https://github.com/charlesneimog/OM-py/raw/master/Documentation/Windows%20-%20Python%20Download%20page.png)
+
+* Then double click in the "python-3.9.9-amd64.exe".
+* Make sure to mark the option *Add Python 3.9 to PATH*. 
+* Click on **Install Now**.
+
+![Path Variables](https://github.com/charlesneimog/OM-py/blob/master/Documentation/Add%20Python%20to%20Path%20variables.png)
+
+* Click in **Close**. 
+
+To make sure that all things are working:
+* Open OM-Sharp
+* Load om-py;
+* Then go to Help-> Help Patches... -> om-py
+* Then open the path *use-py-inside-om*.
+* Then evaluate the patch!
+
+If you heard a sound probably it is working!! If not please let me know!
