@@ -13,5 +13,5 @@
       )
 
 (:symbols 
-      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-mod")
+      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::add-python-modules")
       (:class "om-py::run-py")))

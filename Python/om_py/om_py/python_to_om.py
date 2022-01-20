@@ -9,6 +9,8 @@ import ctypes as c
 import numpy as numpy
 import os
 
+# =============================================================================
+
 class PyObject_HEAD(c.Structure):
     _fields_ = [('HEAD', c.c_ubyte * (object.__basicsize__ -
                                       c.sizeof(c.c_void_p))),
@@ -40,8 +42,7 @@ def to_om_dict (L):
 
 def lispify(L):
     """Convert a Python object L to a lisp representation."""
-    if (isinstance(L, str)
-        or isinstance(L, float)
+    if (isinstance(L, float)
         or isinstance(L, int)
         or isinstance(L, numpy.int64)
     ):
@@ -54,6 +55,9 @@ def lispify(L):
         return '(' + ' '.join(s) + ')'
     elif isinstance(L, dict):
         return lispify(to_om_dict(L))
+    elif isinstance(L, str):
+        new_path = L.replace('\\', '/')
+        return new_path.lisp
     else:
         not_supported_type = type(L)
         Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not supported to charlesneimog@outlook.com')

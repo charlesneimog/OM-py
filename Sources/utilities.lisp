@@ -269,15 +269,6 @@
       (py-var (apply 'mapcar function check-all-rest)))
       (om::make-value 'py-code (list (list :code (concatstring (mapcar (lambda (x) (py-om x)) py-var)))))))
 
-;; ========================
-
-(defmethod! py-add-ext-mod ((list list) &rest rest)
-:initvals '(nil)
-:indoc '("add externals modules to Python") 
-:icon 'py-f
-:doc ""
-
-(om::make-value 'py-externals-mod (list (list :modules (x-append list rest)))))
 
 ;; ========================
 
