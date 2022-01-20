@@ -17,14 +17,16 @@
 
 (mp:process-run-function (string+ "Install om_py")
                  () 
-                 (lambda () (oa::om-command-line (om::string+ "pip install om_py") nil)))
+                 (lambda () (oa::om-command-line 
+                                              #+macosx "pip3 install om_py" 
+                                              #+windows "pip install om_py"
+                                              #+linux "pip3 install om_py" nil)))
 
 ;;; ==========================================================================
 
 (defclass OMPYFunction (OMProgrammingObject)
   ((text :initarg :text :initform "" :accessor text)
-   (error-flag :initform nil :accessor error-flag)
-   ))
+   (error-flag :initform nil :accessor error-flag)))
 
 ;; ============================= PY Special Boxes ===========================
 
@@ -55,8 +57,7 @@ from om_py import to_om
 sum = 2 + 2 
 to_om(sum) # If you want to use something inside OM, you need to print it.
 
-\"  
-     )"))
+\")"))
 
 ;; ======
 
@@ -65,7 +66,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
    (make-instance 'OMPyFunctionInternal
                   :name (if init-args (format nil "~A" (car (list! init-args))) "    py    ")
                   :text *default-py-function-text*)
-   pos init-args))
+          pos init-args))
 
 ;; ======
 
@@ -73,7 +74,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 
 ;; ======
 
-(defmethod update-lisp-fun ((self OMPYFunction))
+(defmethod update-py-fun ((self OMPYFunction))
   (compile-patch self)
   (loop :for item :in (references-to self) do
         (update-from-reference item)))
@@ -267,7 +268,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 (defmethod om-lisp::om-text-editor-destroy-callback ((win py-function-editor-window))
   (let ((ed (editor win)))
     (editor-close ed)
-    (update-lisp-fun (object ed))
+    (update-py-fun (object ed))
     (setf (window ed) nil)
     (setf (g-components ed) nil)
     (unless (references-to (object ed))
@@ -278,7 +279,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 (defmethod om-lisp::om-text-editor-activate-callback ((win py-function-editor-window) activate)
   (when (editor win)
     (when (equal activate nil)
-      (update-lisp-fun (object (editor win))))
+      (update-py-fun (object (editor win))))
     ))
 
 ;;; called from menu
@@ -359,7 +360,7 @@ to_om(list_of_numbers)
 
 ;; ======
 
-(defmethod update-lisp-fun ((self run-py-f))
+(defmethod update-py-fun ((self run-py-f))
   (compile-patch self)
   (loop for item in (references-to self) do
         (update-from-reference item)))
@@ -381,7 +382,7 @@ to_om(list_of_numbers)
 
 (defmethod compile-patch ((self run-py-f))
   "Compilation of a py function"
-    (setf (error-flag self) nil)
+    (setf (error-flag (print self)) nil)
     (let* (
       (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
       (var (car (cdr lambda-expression)))
@@ -559,7 +560,7 @@ to_om(list_of_numbers)
 (defmethod om-lisp::om-text-editor-destroy-callback ((win run-py-function-editor-window))
   (let ((ed (editor win)))
     (editor-close ed)
-    (update-lisp-fun (object ed))
+    (update-py-fun (object ed))
     (setf (window ed) nil)
     (setf (g-components ed) nil)
     (unless (references-to (object ed))
@@ -570,7 +571,7 @@ to_om(list_of_numbers)
 (defmethod om-lisp::om-text-editor-activate-callback ((win run-py-function-editor-window) activate)
   (when (editor win)
     (when (equal activate nil)
-      (update-lisp-fun (object (editor win))))
+      (update-py-fun (object (editor win))))
     ))
 
 ;;; called from menu

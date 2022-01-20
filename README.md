@@ -1,7 +1,7 @@
 # OM-py
 
 
-OM-py is a bridge between Python and OM environments. What it does is format some types of data that are differently represented. For example, one list of numbers in OM is represented by `(1 2 3 4 5)`. In Python, the same list is represented by `[1, 2, 3, 4, 5]`. Sounds inside OM are represented by a class, for example, `#<sound 23186913>`. To send this `#<sound 23186913>` to Python, we need to save it in a temp folder and then give it to Python by a pathname.
+OM-py is a bridge between Python and OM environments. What it does is format some types of data that are differently represented. For example, one list of numbers in OM is represented by (1 2 3 4 5). In Python, the same list is represented by [1, 2, 3, 4, 5]. Sounds inside OM are represented by a class, for example, #<sound 23186913>. To send this #<sound 23186913> to Python, we need to save it in a temp folder and then give it to Python by a pathname.
 
 With this library will be able to:
 * Use python scripts using OM variables.
@@ -15,11 +15,11 @@ To use OM-py you need first install Python, for now we will install Python 3.9.
 
 ## Windows
 
-To install Python on Windows, you first need to download Python 3.9 from the Python website.
+To install Python on Windows you need first download Python 3.9 in the Python website. 
 
 https://www.python.org/downloads/release/python-399/
 
-At the bottom of the page, you will see the **Windows installer (64-bit)**. 
+At the end of this page, you will se the **Windows installer (64-bit)**. 
 
 * Download it!
 
@@ -40,20 +40,4 @@ To make sure that all things are working:
 * Then open the path *use-py-inside-om*.
 * Then evaluate the patch!
 
-If you heard a sound probably, it is working!! If not, please let me know!
-
-
-## Linux
-
-In Linux the process is a little more simple!
-* Open the terminal;
-* If you have no python in your machine (improbable) type `sudo apt install python3.8`. 
-* Then install pip typing, `sudo apt-get -y install python3-pip`.
-
-To make sure that all things are working:
-* Open OM-Sharp
-* Load om-py;
-* Then go to Help-> Help Patches... -> om-py
-* Then open the path *use-py-inside-om*.
-* Then evaluate the patch!
-
+If you heard a sound probably it is working!! If not please let me know!
