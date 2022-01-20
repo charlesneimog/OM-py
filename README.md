@@ -9,9 +9,25 @@ With this library will be able to:
 * Easy Visual Python Multithreading with OM-CKN;
 * All that Python could do.
 
+
+# Install OM-Sharp
+
+Go to https://github.com/cac-t-u-s/om-sharp/releases/ and download it from your plataform!
+
+
+
+
+# Install OM Libraries
+
+To install OM External Libraries see the process in: https://cac-t-u-s.github.io/pages/libraries!
+
+
+
+
 # Install Python
 
 To install Python on Windows, you first need to download Python 3.9 from the Python website.
+
 
 ## Windows
 
