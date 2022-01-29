@@ -9,10 +9,9 @@
 (:source-files
       "Sources/package.lisp"
       "Sources/utilities"
-      "Sources/py"  
-      )
+      "Sources/py")
 
 (:symbols 
       (:functions "om-py::run-py" "om-py::py-add-var" "om-py::add-python-modules" "om-py::py-mk-list")
       (:class "om-py::run-py")
-      (:special-items py py-run)))
+      (:special-items "om-py::py" "om-py::py-run")))
