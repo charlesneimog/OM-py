@@ -1,7 +1,6 @@
 LICENSE
 README.md
 setup.py
-om_py/[False, ].py
 om_py/__init__.py
 om_py/functions.py
 om_py/python_to_om.py

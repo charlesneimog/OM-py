@@ -60,23 +60,23 @@ def lispify(L):
         return new_path.lisp
     else:
         not_supported_type = type(L)
-        Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not supported to charlesneimog@outlook.com')
+        Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not a supported type to charlesneimog@outlook.com or https://github.com/charlesneimog/OM-py/issues/new')
         return Warning
 
 # Supported Types: ============================================================
 
-get_dict(str)['lisp'] = property(lambda s:'"{}"'.format(str(s)))
-get_dict(float)['lisp'] = property(lambda f:'{}'.format(str(f)))
-get_dict(int)['lisp'] = property(lambda f:'{}'.format(str(f)))
-get_dict(numpy.int64)['lisp'] = property(lambda f:'{}'.format(str(f)))
-get_dict(numpy.int32)['lisp'] = property(lambda f:'{}'.format(str(f)))
-get_dict(numpy.float64)['lisp'] = property(lambda f:'{}'.format(str(f)))
-get_dict(numpy.float32)['lisp'] = property(lambda f:'{}'.format(str(f)))
-get_dict(list)['lisp'] = property(lispify)
-get_dict(tuple)['lisp'] = property(lispify)
-get_dict(dict)['lisp'] = property(lispify)
-get_dict(numpy.ndarray)['lisp'] = property(lispify)
-get_dict(vamp.vampyhost.RealTime)['lisp'] = property(lambda f:'{}'.format(str(f)))
+get_dict(str)['lisp'] = property(lambda s:'"{}"'.format(str(s))) # String
+get_dict(float)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float
+get_dict(int)['lisp'] = property(lambda f:'{}'.format(str(f))) # int
+get_dict(numpy.int64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int64
+get_dict(numpy.int32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int32
+get_dict(numpy.float64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float64
+get_dict(numpy.float32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float32
+get_dict(list)['lisp'] = property(lispify) # List
+get_dict(tuple)['lisp'] = property(lispify) # Tuple
+get_dict(dict)['lisp'] = property(lispify) # Dict
+get_dict(numpy.ndarray)['lisp'] = property(lispify) # Numpy Array
+get_dict(vamp.vampyhost.RealTime)['lisp'] = property(lambda f:'{}'.format(str(f))) # Vamp RealTime plugin
 
 # Supported Types: ============================================================
 
