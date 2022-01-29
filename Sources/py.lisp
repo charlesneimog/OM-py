@@ -13,15 +13,9 @@
 ; File author: J. Bresson adapted by Charles K. Neimog
 ;============================================================================
 
+
+
 (in-package :om)
-
-(mp:process-run-function (string+ "Install om_py")
-                 () 
-                 (lambda () (oa::om-command-line 
-                                              #+macosx "pip3 install om_py" 
-                                              #+windows "pip install om_py"
-                                              #+linux "pip3 install om_py" nil)))
-
 ;;; ==========================================================================
 
 (defclass OMPYFunction (OMProgrammingObject)
@@ -386,7 +380,7 @@ to_om(list_of_numbers)
     (let* (
       (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
       (var (car (cdr lambda-expression)))
-      (format2python (mapcar (lambda (x) `(format2python ,x)) var))
+      (format2python (mapcar (lambda (x) `(om-py::format2python ,x)) var))
       (code (flat (x-append (list (second (cdr lambda-expression))) (list format2python)) 1))
       (py-code (list `(om-py::run-py (make-value (quote om-py::om2py) (list (list :py-om (format nil ,@code)))))))
       (function-def

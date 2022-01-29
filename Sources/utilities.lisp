@@ -1,7 +1,48 @@
 
 (in-package :om-py)
 
-;==================================
+
+; ==================================
+(defun py-list->string (ckn-list)
+  (when ckn-list
+    (concatenate 'string 
+                 (write-to-string (car ckn-list)) (py-list->string (cdr ckn-list)))))
+
+;https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-strings
+
+
+; =================================
+;; Pip install venv 
+
+(print "Installing venv!")
+
+(oa::om-command-line 
+                  #+macosx "pip3 install virtualenv"
+                  #+windows "pip install virtualenv"
+                  #+linux "pip3 install virtualenv"
+                                                    t)
+
+;; Pip create env 
+
+(oa::om-command-line 
+                  #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile "")))))) t)
+
+;; pip always use venv
+
+#+windows (defvar *activate-virtual-enviroment* (namestring (merge-pathnames "Python/Scripts/activate.bat" (om::tmpfile ""))) "nil")
+#+linux (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+#+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+
+
+(mp:process-run-function (om::string+ "Install om_py")
+                 () 
+                 (lambda () (oa::om-command-line 
+                                              #+macosx (om::string+ *activate-virtual-enviroment* " && pip3 install om_py") 
+                                              #+windows (om::string+ *activate-virtual-enviroment* " && pip install om_py")
+                                              #+linux (om::string+ *activate-virtual-enviroment* " && pip3 install om_py")
+                                                    t)))
+
+; =================================================
 
 (defun add-var-format (type)
     (case (type-of type)
@@ -13,9 +54,47 @@
                                     (om::string+ "r" "'" filepathname "'")))
         (fixnum (list (write-to-string type)))
         (float (write-to-string type))
-        (cons (flat (mapcar (lambda (x) (list (add-var-format x))) type)))
+        (cons (lisp-list_2_python-list type))
         (single-float (list (write-to-string type)))
         (pathname  (list (namestring type)))))
+
+;==================================
+
+(defun format2python-no-cons (type)
+    (case (type-of type)
+        (lispworks:simple-text-string (list type))
+        (sound (let* (
+                      (filepathname (namestring (car (if (not (file-pathname type)) 
+                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
+                                                         (list (file-pathname type)))))))
+                                    (om::string+ "r" "'" filepathname "'")))
+        (fixnum (list (write-to-string type)))
+        (float (write-to-string type))
+        (cons (mapcar (lambda (x) (format2python-py-add-var x)) type))
+        (single-float (list (write-to-string type)))
+        (pathname  (list (namestring type)))))
+
+;==================================
+
+(defun format2python-py-add-var (type)
+    (case (type-of type)
+        (lispworks:simple-text-string (list type))
+        (sound (let* (
+                      (filepathname (namestring (car (if (not (file-pathname type)) 
+                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
+                                                         (list (file-pathname type)))))))
+                                    (om::string+ "r" "'" filepathname "'")))
+        (fixnum (list (write-to-string type)))
+        (float (write-to-string type))
+        (cons (mapcar (lambda (x) (if (equal (length (om::list! x)) 1)
+                                      (caar (format2python-no-cons x))
+                                      (format2python x))) type))
+        (single-float (list (write-to-string type)))
+        (pathname  (list (namestring type)))))
+
+
+;==================================
+
 
 ;==================================
 
@@ -75,12 +154,8 @@
 ;==================================== 
 
 
-(defun py-list->string (ckn-list)
-  (when ckn-list
-    (concatenate 'string 
-                 (write-to-string (car ckn-list)) (py-list->string (cdr ckn-list)))))
 
-; https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-strings
+;
 ;====================================
 
 (defun concatString (list)
@@ -143,11 +218,11 @@
 ;================================== WAIT PROCESS =================
 
 (defun read_from_python (x) 
-    (loop :for y :in (om::list! x) :collect 
+    (om::flat (loop :for y :in (om::list! x) :collect 
                               (if 
                                     (equal (type-of y) 'lispworks:simple-text-string)
                                     (read-from-string y)
-                                    y)))
+                                    y)) 1))
 
 
 ; ================================= Import modules functions ======================
@@ -222,17 +297,17 @@
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
       (prepare-cmd-code (py-list->string (list (namestring save-python-code))))
       (where-i-am-running 
-                              #+macosx "python3 " 
-                              #+windows "python "
-                              #+linux "python3.8 "))
-      (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) nil)
+                              #+macosx (om::string+ *activate-virtual-enviroment* " && python3 ")
+                              #+windows (om::string+ *activate-virtual-enviroment* " && python ")
+                              #+linux (om::string+ *activate-virtual-enviroment* " && python3.8 ")))
+      (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
-            (mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
+            ;(mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
             (mp:process-run-function "del-data-code" () (lambda (x) (clear-the-file x)) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
             (read_from_python (if   (null data)        
                                             nil
-                                           (om::contents data))))))
+                                           (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
 
 ;; ================================================
 
@@ -253,9 +328,11 @@
 :doc "With this object you can see the index parameters of some VST2 plugin."
 
 (read_from_python (run-py (om::make-value 'to-om (list (list :py-inside-om (code code)))) 
-                          (if (equal (type-of cabecario) '|om-python|::py-externals-mod)
-                              (modules cabecario)
-                              cabecario))))
+                          (case (print (type-of cabecario))
+                                ('|om-python|::py-externals-mod  (modules cabecario))
+                                ('|om-python|::om2py (py-om cabecario))
+                                ('string cabecario)))))
+                                
 
 ;; ========================
 
@@ -264,10 +341,22 @@
 :indoc '("run py") 
 :icon 'py-f
 :doc ""
+
 (let* (
-      (check-all-rest (loop :for type :in (om::list! rest) :collect (add-var-format type)))
+      (check-all-rest (loop :for type :in (om::list! rest) :collect (format2python-py-add-var type)))
       (py-var (apply 'mapcar function check-all-rest)))
       (om::make-value 'py-code (list (list :code (concatstring (mapcar (lambda (x) (py-om x)) py-var)))))))
+
+;; ========================
+
+(defmethod! py-concat-code ((codes list))
+:initvals '(nil)
+:indoc '("run py") 
+:icon 'py-f
+:doc ""
+
+(om::make-value 'py-code (list (list :code (concatString (loop :for all_codes :in codes :collect (code all_codes)))))))
+
 
 
 ;; ========================
@@ -313,9 +402,9 @@ from om_py import to_om
                               (install_modules 
                                     (case (car visual-message)
                                           (1 (om::om-cmd-line 
-                                                      #+macosx (format nil "pip3 install ~d" not_installed)
-                                                      #+windows (format nil "pip install ~d" not_installed)
-                                                      #+linux (format nil "pip3 install ~d" not_installed)))
+                                                      #+macosx (format nil "~d && pip3 install ~d" *activate-virtual-enviroment* not_installed)
+                                                      #+windows (format nil "~d && pip install ~d" *activate-virtual-enviroment*  not_installed)
+                                                      #+linux (format nil "~d && pip3 install ~d" *activate-virtual-enviroment*  not_installed)))
                                           (0 nil)
                                           (nil (om::abort-eval)))))
                                     (if 
@@ -336,3 +425,10 @@ from om_py import to_om" format-import format-from_import))))
 
 ;==================================
 
+(defmethod! py-mk-list ((list list))
+:initvals '(nil)
+:indoc '("run py") 
+:icon 'py-f
+:doc ""
+
+(lisp-list_2_python-list list))
