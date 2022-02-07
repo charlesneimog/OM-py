@@ -89,7 +89,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
                         (let* (
                               (var (car (cdr lambda-expression)))
                               (code (flat (x-append (list (second (cdr lambda-expression))) (list var)) 1))
-                              (py-code (list `(make-value (quote om-py::om2py) (list (list :py-om (format nil ,@code)))))))
+                              (py-code (list `(make-value (quote om-py::py-code) (list (list :code (format nil ,@code)))))))
                               `(defun ,(intern (string (compiled-fun-name self)) :om) 
                                               ,var ;;variaveis 
                                               ,@py-code
@@ -380,7 +380,7 @@ to_om(list_of_numbers)
       (var (car (cdr lambda-expression)))
       (format2python (mapcar (lambda (x) `(om-py::format2python ,x)) var))
       (code (flat (x-append (list (second (cdr lambda-expression))) (list format2python)) 1))
-      (py-code (list `(om-py::run-py (make-value (quote om-py::om2py) (list (list :py-om (format nil ,@code)))))))
+      (py-code (list `(om-py::run-py (make-value (quote om-py::py-code) (list (list :code (format nil ,@code)))))))
       (function-def
             (if (and lambda-expression (python-expression-p lambda-expression))
                   (progn (setf (compiled? self) t)
