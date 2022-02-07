@@ -217,7 +217,7 @@ def musicxml2om(musicxml_file):
 
     tamanho_partes = len(todas_as_partes)
 
-    print(f'There is {tamanho_partes} voices!')
+    ##print(f'There is {tamanho_partes} voices!')
 
     PITCH_NOTE = []
     PITCHES_BY_MEASURE = []
@@ -283,8 +283,8 @@ def musicxml2om(musicxml_file):
             
             for notas in range(quantidade_de_notas): ## =============================================================================== NOTA POR NOTA
                 note_number = notas + 1
-                print('\n')
-                print(f'ESTOU NA PARTE {part_number}, NO COMPASSO {compasso_number}, na NOTA {note_number}')
+                #print('\n')
+                #print(f'ESTOU NA PARTE {part_number}, NO COMPASSO {compasso_number}, na NOTA {note_number}')
                 try:
                     accidental = accidental_to_number(keys[0]["part"][partes]["measure"][compassos]["note"][notas]["accidental"][0]["_value"])
                 except:
@@ -328,7 +328,7 @@ def musicxml2om(musicxml_file):
                                         None
                                     PITCH_NOTE.append(note_name)
                                     TIE_VALUE.append(final_ratio)
-                                    print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                    #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                                 except:
                                     MICROTON = CENTS_DO_COMPASSO[CENT_INDEX]
                                     CENT_INDEX += 1
@@ -342,7 +342,7 @@ def musicxml2om(musicxml_file):
                                         None
                                     PITCH_NOTE.append(note_name)
                                     TIE_VALUE.append(final_ratio)
-                                    print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                    #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                                 
                             elif ligadura == "stop": # ALTURA COM QUIALTERA E LIGADURA NO MEIO OU FINALIZANDO A LIGADURA
                                 final_numerator = normal_value / figure_rhythm_number
@@ -351,11 +351,11 @@ def musicxml2om(musicxml_file):
                                     notes_or_rest["dot"]
                                     quantos_pontos = len(notes_or_rest["dot"])
                                     final_ratio = simplify_ratios(add_dots(final_ratio, quantos_pontos))
-                                    print('Sou uma nota finalizando/no meio da ligadura dentro de quialtera e tenho ponto. Meu valor é: ', final_ratio)
+                                    #print('Sou uma nota finalizando/no meio da ligadura dentro de quialtera e tenho ponto. Meu valor é: ', final_ratio)
                                     TIE_VALUE.append(final_ratio)
                                 except:
                                     TIE_VALUE.append(final_ratio)
-                                    print('Sou uma nota finalizando/no meio da ligadura dentro de quialtera e nao tenho ponto, meu valor é', final_ratio)
+                                    #print('Sou uma nota finalizando/no meio da ligadura dentro de quialtera e nao tenho ponto, meu valor é', final_ratio)
 
                                 # Se a proxima no for INICIAR uma ligadura, a soma de todas as ligadas anteriormente serão adicionadas ao final da nota
                                 try: # tenta ver se a proxima nota tem ligadura
@@ -367,13 +367,13 @@ def musicxml2om(musicxml_file):
                                         
                                     if next_tie != "stop": # É a ultima nota do compasso:
                                         RHYTHMIC_RATIOS.append(simplify_ratios(sum_list_of_ratios(TIE_VALUE)))
-                                        print('Valor final da ligadura:', simplify_ratios(sum_list_of_ratios(TIE_VALUE)))
+                                        #print('Valor final da ligadura:', simplify_ratios(sum_list_of_ratios(TIE_VALUE)))
                                         TIE_VALUE = []
                                     else:
                                         None 
                                 except: # Se tudo der errado, significa que a proxima nota nao é ligada, entao soma-se todos os valores e adiciona a lista final de valores
                                     RHYTHMIC_RATIOS.append(simplify_ratios(sum_list_of_ratios(TIE_VALUE)))
-                                    print('Valor final da ligadura:', simplify_ratios(sum_list_of_ratios(TIE_VALUE)))
+                                    #print('Valor final da ligadura:', simplify_ratios(sum_list_of_ratios(TIE_VALUE)))
                                     TIE_VALUE = [] # apos adicionar limpa o valor das ligaduras.
         
                                 
@@ -396,7 +396,7 @@ def musicxml2om(musicxml_file):
                                 except:
                                     None
                                 
-                                print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                             except:
                                 MICROTON = CENTS_DO_COMPASSO[CENT_INDEX]
                                 CENT_INDEX += 1
@@ -408,7 +408,7 @@ def musicxml2om(musicxml_file):
                                     DYNAMIC_VALUE.append(dynamic)
                                 except:
                                     None
-                                print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                             RHYTHMIC_RATIOS.append(final_ratio) 
                         
                     #=============================================== QUANDO FOR ALTURAS SEM QUIALTERAS 
@@ -443,7 +443,7 @@ def musicxml2om(musicxml_file):
                                     
                                     PITCH_NOTE.append(note_name)
                                     TIE_VALUE.append(final_ratio)
-                                    print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                    #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                                 except:
                                     final_ratio = simplify_ratios(fix_ratios_values(final_ratio))
                                     MICROTON = CENTS_DO_COMPASSO[CENT_INDEX]
@@ -458,7 +458,7 @@ def musicxml2om(musicxml_file):
                                         None
                                     PITCH_NOTE.append(note_name)
                                     TIE_VALUE.append(final_ratio)
-                                    print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                    #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
 
 
                             elif ligadura == "stop":
@@ -472,11 +472,11 @@ def musicxml2om(musicxml_file):
                                     quantos_pontos = len(notes_or_rest["dot"])
                                     final_ratio = simplify_ratios(add_dots(final_ratio, quantos_pontos))
                                     TIE_VALUE.append(final_ratio)
-                                    print('Sou uma nota no meio de uma ligadura, com ponto, sem QUIALTERAS, meu valor é:', final_ratio)
+                                    #print('Sou uma nota no meio de uma ligadura, com ponto, sem QUIALTERAS, meu valor é:', final_ratio)
                                 except: # ========================================================================== SEM PONTO
                                     final_ratio = simplify_ratios(fix_ratios_values(final_ratio))
                                     TIE_VALUE.append(final_ratio)
-                                    print('Sou uma nota no meio de uma ligadura, sem ponto, sem QUIALTERAS, meu valor é:', final_ratio)
+                                    #print('Sou uma nota no meio de uma ligadura, sem ponto, sem QUIALTERAS, meu valor é:', final_ratio)
                                 
                                 try: ## Essa parte ve se a proxima ligadura é uma nova ligadura ou a mesma
                                     if quantidade_de_notas == (notas + 1): # Se isso for TRUE significa que estamos na ultima nota do compasso
@@ -486,13 +486,13 @@ def musicxml2om(musicxml_file):
                                         next_tie = next_notes_or_rest["tie"][0]["_attributes"]["type"]   # É a ultima nota do compasso:
                                     if next_tie != "stop":
                                         RHYTHMIC_RATIOS.append(sum_list_of_ratios(TIE_VALUE))
-                                        print('Valor final da ligadura:', sum_list_of_ratios(TIE_VALUE))
+                                        #print('Valor final da ligadura:', sum_list_of_ratios(TIE_VALUE))
                                         TIE_VALUE = []
                                     else:
                                         None 
                                 except:
                                     RHYTHMIC_RATIOS.append(sum_list_of_ratios(TIE_VALUE))
-                                    print('Valor final da ligadura:', sum_list_of_ratios(TIE_VALUE))
+                                    #print('Valor final da ligadura:', sum_list_of_ratios(TIE_VALUE))
                                     TIE_VALUE = []
                                                     
                         
@@ -520,7 +520,7 @@ def musicxml2om(musicxml_file):
                                     None
                                 PITCH_NOTE.append(note_name)
                                 RHYTHMIC_RATIOS.append(final_ratio)
-                                print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                             except:
                                 MICROTON = CENTS_DO_COMPASSO[CENT_INDEX]
                                 CENT_INDEX += 1
@@ -533,7 +533,7 @@ def musicxml2om(musicxml_file):
                                     None
                                 PITCH_NOTE.append(note_name)
                                 RHYTHMIC_RATIOS.append(final_ratio)
-                                print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
+                                #print(f'Sou uma {note_name}, finalizando/no meio da ligadura dentro de quialtera e tenho ponto, meu valor final é: {final_ratio}')
                 
                 except: ### ========================================================================== Quando a nota é PAUSE pausa executa isso!
         
@@ -545,12 +545,12 @@ def musicxml2om(musicxml_file):
                         figure_rhythm_number = names2ratio(duration_name)
                         final_numerator = normal_value / figure_rhythm_number
                         final_ratio = '-{ratio}'.format(ratio = simplify_ratios(fix_ratios_values(f'{final_numerator}/{actual_notes}')))
-                        print('Sou uma pausa com quialtera, meu valor é: ', final_ratio)      
+                        #print('Sou uma pausa com quialtera, meu valor é: ', final_ratio)      
                         RHYTHMIC_RATIOS.append(final_ratio)
                         
                     except: # ===================================================================================== Pausas Sem quialteras 
                         figure_rhythm_number = '-1/{ratio}'.format(ratio = names2ratio(duration_name))
-                        print('Sou uma pausa sem quialtera, meu valor é: ', figure_rhythm_number)
+                        #print('Sou uma pausa sem quialtera, meu valor é: ', figure_rhythm_number)
                         RHYTHMIC_RATIOS.append(figure_rhythm_number)
 
                 

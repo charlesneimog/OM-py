@@ -11,36 +11,50 @@
 ;https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-strings
 
 
+
+(eval (om::flat 
+                  (om::get-slot-val 
+                     (let
+                         (
+                              (tb
+                                    (om::make-value-from-model 'textbuffer 
+                                         (probe-file (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py")))) nil)))
+                              (setf (om::reader tb) :lines-cols) tb) "CONTENTS")))
+
 ; =================================
-;; Pip install venv 
-
-(print "Installing venv!")
-
-(oa::om-command-line 
-                  #+macosx "pip3 install virtualenv"
-                  #+windows "pip install virtualenv"
-                  #+linux "pip3 install virtualenv"
-                                                    t)
-
-;; Pip create env 
-
-(oa::om-command-line 
-                  #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile "")))))) t)
+;; Pip install venv if first load
+  
+      (if *first-time-load*
+            (let* ()
+                  (om::save-as-text '(((defvar *first-time-load* nil))) (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py"))))
+                  (print "Installing venv!")
+                  (oa::om-command-line 
+                                    #+macosx "pip3 install virtualenv"
+                                    #+windows "pip install virtualenv"
+                                    #+linux "pip3 install virtualenv"
+                                                                  t)
+                  ;; Pip create env 
+                  (oa::om-command-line 
+                                    #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile "")))))) t)
 
 ;; pip always use venv
 
-#+windows (defvar *activate-virtual-enviroment* (namestring (merge-pathnames "Python/Scripts/activate.bat" (om::tmpfile ""))) "nil")
-#+linux (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
-#+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+                  #+windows (defvar *activate-virtual-enviroment* (namestring (merge-pathnames "Python/Scripts/activate.bat" (om::tmpfile ""))) "nil")
+                  #+linux (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+                  #+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
 
-
-(mp:process-run-function (om::string+ "Install om_py")
-                 () 
-                 (lambda () (oa::om-command-line 
-                                              #+macosx (om::string+ *activate-virtual-enviroment* " && pip3 install om_py") 
-                                              #+windows (om::string+ *activate-virtual-enviroment* " && pip install om_py")
-                                              #+linux (om::string+ *activate-virtual-enviroment* " && pip3 install om_py")
-                                                    t)))
+                  (mp:process-run-function (om::string+ "Install om_py")
+                              () 
+                              (lambda () (oa::om-command-line 
+                                                            #+macosx (om::string+ *activate-virtual-enviroment* " && pip3 install om_py") 
+                                                            #+windows (om::string+ *activate-virtual-enviroment* " && pip install om_py")
+                                                            #+linux (om::string+ *activate-virtual-enviroment* " && pip3 install om_py")
+                                                                  t))))
+                                                                  
+            #+windows (defvar *activate-virtual-enviroment* (namestring (merge-pathnames "Python/Scripts/activate.bat" (om::tmpfile ""))) "nil")
+            #+linux (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+            #+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")      
+                                                            )
 
 ; =================================================
 
