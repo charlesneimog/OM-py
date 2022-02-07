@@ -331,6 +331,7 @@
                           (case (print (type-of cabecario))
                                 ('|om-python|::py-externals-mod  (modules cabecario))
                                 ('|om-python|::om2py (py-om cabecario))
+                                ('|om-python|::py-code (code cabecario))
                                 ('string cabecario)))))
                                 
 
@@ -345,7 +346,7 @@
 (let* (
       (check-all-rest (loop :for type :in (om::list! rest) :collect (format2python-py-add-var type)))
       (py-var (apply 'mapcar function check-all-rest)))
-      (om::make-value 'py-code (list (list :code (concatstring (mapcar (lambda (x) (py-om x)) py-var)))))))
+      (om::make-value 'py-code (list (list :code (concatstring (mapcar (lambda (x) (code x)) py-var)))))))
 
 ;; ========================
 

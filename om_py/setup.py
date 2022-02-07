@@ -23,7 +23,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['vamphost'],
+    install_requires=['vamphost', 'html_to_json'],
     keywords=['python', 'music', 'OpenMusic'],
     classifiers=[
         "Operating System :: Unix",
