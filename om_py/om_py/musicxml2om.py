@@ -1,5 +1,5 @@
 import html_to_json
-from om_py import to_om, lispify
+from om_py import to_om
 import math
 
 
@@ -566,6 +566,5 @@ def musicxml2om(musicxml_file):
     to_om(RHYTHMIC_BY_VOICE)
     to_om(PITCHES_BY_VOICES)
     to_om(DYNAMICS_BY_VOICE)
-
 
 # =============================================================================
