@@ -58,6 +58,8 @@ def lispify(L):
     elif isinstance(L, str):
         new_path = L.replace('\\', '/')
         return new_path.lisp
+    elif isinstance(L, complex):
+        return '#C({0} {1})'.format(L.real, L.imag)
     else:
         not_supported_type = type(L)
         Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not a supported type to charlesneimog@outlook.com or https://github.com/charlesneimog/OM-py/issues/new')
@@ -68,6 +70,7 @@ def lispify(L):
 get_dict(str)['lisp'] = property(lambda s:'"{}"'.format(str(s))) # String
 get_dict(float)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float
 get_dict(int)['lisp'] = property(lambda f:'{}'.format(str(f))) # int
+get_dict(complex)['lisp'] = property(lambda complex:'#C({0} {1})'.format(complex.real, complex.imag)) # Complex
 get_dict(numpy.int64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int64
 get_dict(numpy.int32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int32
 get_dict(numpy.float64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float64

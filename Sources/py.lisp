@@ -374,7 +374,7 @@ to_om(list_of_numbers)
 
 (defmethod compile-patch ((self run-py-f))
   "Compilation of a py function"
-    (setf (error-flag (print self)) nil)
+    (setf (error-flag self) nil)
     (let* (
       (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
       (var (car (cdr lambda-expression)))

@@ -82,10 +82,10 @@
                                                          (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
                                                          (list (file-pathname type)))))))
                                     (om::string+ "r" "'" filepathname "'")))
-        (fixnum (list (write-to-string type)))
+        (fixnum (write-to-string type))
         (float (write-to-string type))
         (cons (mapcar (lambda (x) (format2python-py-add-var x)) type))
-        (single-float (list (write-to-string type)))
+        (single-float (write-to-string type))
         (pathname  (list (namestring type)))))
 
 ;==================================
@@ -123,7 +123,7 @@
         (fixnum (list (write-to-string type)))
         (float (write-to-string type))
         (cons (lisp->list-py-run (flat (mapcar (lambda (x) (list (format2python x))) type))))
-        (single-float (list (write-to-string type)))
+        (single-float (write-to-string type))
         (pathname   (list (namestring type)))))
 
 ;; ================= Some Functions =====================
@@ -342,7 +342,7 @@
 :doc "With this object you can see the index parameters of some VST2 plugin."
 
 (read_from_python (run-py (om::make-value 'to-om (list (list :py-inside-om (code code)))) 
-                          (case (print (type-of cabecario))
+                          (case (type-of cabecario)
                                 ('|om-python|::py-externals-mod  (modules cabecario))
                                 ('|om-python|::om2py (py-om cabecario))
                                 ('|om-python|::py-code (code cabecario))
