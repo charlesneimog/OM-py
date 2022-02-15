@@ -1,12 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>HTML Elements Reference</title>
-</head>
-<body>
+<h1 id="om-py">OM-PY</h1>
+<pre><code class="lang-lisp">(py_var (freq tempo)
+<span class="hljs-comment">"</span>
+import cmath
+import numpy <span class="hljs-keyword">as</span> np
+from om_py import to_om
 
-<h1>This is a heading</h1>
-<p>This is a paragraph.</p>
+#freq = [<span class="hljs-number">2</span>, <span class="hljs-number">5</span>, <span class="hljs-number">1997</span>]
+#durations = [<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>]
+freq = ~d
+tempo = ~d
 
-</body>
-</html>
+todas_senoides = []
+
+<span class="hljs-keyword">for</span> <span class="hljs-keyword">x</span>, <span class="hljs-keyword">y</span> in zip(freq, tempo):
+    time = <span class="hljs-keyword">list</span>(<span class="hljs-built_in">range</span>(<span class="hljs-keyword">int</span>(<span class="hljs-number">44100</span>*<span class="hljs-keyword">y</span>)))
+    cycle = <span class="hljs-keyword">list</span>(<span class="hljs-keyword">map</span>(lambda <span class="hljs-variable">a:</span> (-<span class="hljs-number">2</span> * np.pi * <span class="hljs-keyword">x</span>) * (<span class="hljs-keyword">a</span> / <span class="hljs-number">44100</span>) , time))
+    sin_angle = <span class="hljs-keyword">list</span>(<span class="hljs-keyword">map</span>(lambda <span class="hljs-keyword">x</span>: cmath.<span class="hljs-built_in">sin</span>(<span class="hljs-keyword">x</span>), cycle))
+    cos_angle = <span class="hljs-keyword">list</span>(<span class="hljs-keyword">map</span>(lambda <span class="hljs-keyword">x</span>: cmath.<span class="hljs-built_in">cos</span>(<span class="hljs-keyword">x</span>), cycle))
+    sine_wave = <span class="hljs-keyword">map</span>(lambda <span class="hljs-keyword">x</span>, <span class="hljs-keyword">y</span>: <span class="hljs-keyword">x</span> + (cmath.<span class="hljs-built_in">sqrt</span>(-<span class="hljs-number">1</span>) * <span class="hljs-keyword">y</span>), cos_angle, sin_angle)
+    todas_senoides.<span class="hljs-keyword">append</span>(<span class="hljs-keyword">list</span>(sine_wave))
+
+trajetoria_final = []
+
+<span class="hljs-keyword">for</span> <span class="hljs-keyword">x</span> in <span class="hljs-built_in">range</span>(<span class="hljs-built_in">len</span>(todas_senoides[<span class="hljs-number">0</span>])):
+    todos_bins_de_um_sinal = <span class="hljs-keyword">map</span>(lambda <span class="hljs-keyword">y</span>: <span class="hljs-keyword">y</span>[<span class="hljs-keyword">x</span>], todas_senoides)
+    soma = sum(<span class="hljs-keyword">list</span>(todos_bins_de_um_sinal))
+    trajetoria_final.<span class="hljs-keyword">append</span>(soma)
+
+to_om(trajetoria_final)
+
+<span class="hljs-comment">"</span>
+)
+</code></pre>
