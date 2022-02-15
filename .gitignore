@@ -1,3 +1,8 @@
 *~
 *.html
 *.lisp~
+reference-pages 
+reference-pages/ind-alpha.html
+reference-pages/index.html
+reference-pages/py-add-var.html
+reference-pages/py-mk-list.html
