@@ -9,9 +9,11 @@
 (:source-files
       "Sources/package.lisp"
       "Sources/utilities"
-      "Sources/py")
+      "Sources/py"
+      "Sources/new-key-to-patch-editor"
+      )
 
 (:symbols 
-      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::add-python-modules" "om-py::py-mk-list")
+      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-modules" "om-py::py-mk-list")
       (:class "om-py::run-py")
       (:special-items "om-py::py" "om-py::py-run")))

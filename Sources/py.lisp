@@ -38,18 +38,17 @@
 
 (defparameter *default-py-function-text*
 
-  '(";;; edit a valid python code,"
+  '(";;; edit a valid python code, It will just run it."
     ";;; changing the variables you want to use "
     ";;; inside om-sharp to {til}d."
+    ";;; The name 'LIST' CANNOT be used as a variable name."
     "(py_var () 
 \"
-# Here you are work with Python code.
-# PUT_YOUR_CODE_HERE (leave the quotes). For example
-from om_py import to_om
+from om_py.python_to_om import to_om
 sum = 2 + 2 
 to_om(sum) # If you want to use something inside OM, you need to print it.
 
-\")"))
+\"  )"))
 
 ;; ======
 
@@ -293,23 +292,26 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 (defmethod font-command ((self py-function-editor))
   #'(lambda () (om-lisp::change-text-edit-font (window self))))
 
+
+;; ===============================================================
+;; ===============================================================
+;; ===============================================================
 ;; ================ Python Code Editor Inside OM =================
+;; ===============================================================
+;; ===============================================================
+;; ===============================================================
 
 (defclass run-py-f (OMProgrammingObject)
   ((text :initarg :text :initform "" :accessor text)
-   (error-flag :initform nil :accessor error-flag)
-   ))
+   (error-flag :initform nil :accessor error-flag)))
 
 ;; ======
-
 (defmethod get-object-type-name ((self run-py-f)) "run")
 
 ;; ======
-
 (defmethod default-compiled-gensym  ((self run-py-f)) (gensym "py-run-"))
 
 ;; ======
-
 (defclass run-py-f-internal (run-py-f) ()
   (:default-initargs :icon :py-f)
   (:metaclass om::omstandardclass))
@@ -324,7 +326,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
     ";;; The name 'LIST' CANNOT be used as a variable name."
     "(py_var () 
 \"
-from om_py import to_om
+from om_py.python_to_om import to_om
 
 list_of_numbers = []
 
@@ -333,9 +335,7 @@ for x in range(10):
 
 to_om(list_of_numbers)
 
-\"  
-
-     )"))
+\"  )"))
 
 ;; ======
 
@@ -378,9 +378,10 @@ to_om(list_of_numbers)
     (let* (
       (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
       (var (car (cdr lambda-expression)))
+      ;(test (print var))
       (format2python (mapcar (lambda (x) `(om-py::format2python ,x)) var))
-      (code (flat (x-append (list (second (cdr lambda-expression))) (list format2python)) 1))
-      (py-code (list `(om-py::run-py (make-value (quote om-py::py-code) (list (list :code (format nil ,@code)))))))
+      (code (om::flat (om::x-append (list (second (cdr lambda-expression))) (list format2python)) 1))
+      (py-code (list `(om-py::run-py (om::make-value (quote om-py::py-code) (list (list :code (format nil ,@code)))))))
       (function-def
             (if (and lambda-expression (python-expression-p lambda-expression))
                   (progn (setf (compiled? self) t)
@@ -423,8 +424,7 @@ to_om(list_of_numbers)
       (let ((args (function-arg-list fname)))
         (loop for a in args collect
               (make-instance 'box-input :name (string a)
-                             :box self :reference nil)))
-      )))
+                             :box self :reference nil))))))
 
 ;; ======
 

@@ -143,8 +143,8 @@
 
 ;; ================================================ BRING TO OM ===========
 
-(om::defclass! to-om ()
-    ((py-inside-om :initform nil :initarg :py-inside-om :accessor py-inside-om)))
+;(om::defclass! to-om ()
+ ;   ((py-inside-om :initform nil :initarg :py-inside-om :accessor py-inside-om)))
 
 ;; ================================================ PY CODE INSIDE OM ===========
 
@@ -162,14 +162,25 @@
 (om::defclass! py-externals-mod ()
     ((modules :initform nil :initarg :modules :accessor modules)))
 
+;==================================== STOLEN FUNCTIONS =========================
 
-;==================================== 
-;==================================== Stolen Functions
-;==================================== 
+(defun get-file (filename)
+  (with-open-file (stream filename)
+    (loop for line = (read-line stream nil)
+          while line
+          collect line)))
 
+;https://stackoverflow.com/questions/12906738/common-lisp-print-on-one-line-return-single-line-counter-formatting
 
+;====================================
 
-;
+(defun char-by-char (string)
+
+   (loop for idex from 0 to (- (length string) 1)
+      collect 
+         (string (aref string idex))))
+
+;https://stackoverflow.com/questions/18065996/loop-over-characters-in-string-common-lisp
 ;====================================
 
 (defun concatString (list)
@@ -182,7 +193,33 @@
         result)))
 
 ;; https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-string
+
+
 ;===================================================================== Files control =====================================
+
+(defun get-lisp-variables (pathname-of-code)
+
+    (remove nil (loop :for lines :in (get-file pathname-of-code)
+                      :collect 
+                    (let* (
+                          (characters  (char-by-char lines))
+                          (is-py-var (equal (om-py::concatstring (om::first-n characters 8)) "#(py_var")))
+                          (if is-py-var
+                              (om-py::concatstring (cdr characters)))))))
+
+;===============================
+(defun remove-lisp-var (pathname-of-code)
+
+    (remove nil (loop :for lines :in (get-file pathname-of-code)
+                      :collect 
+                    (let* (
+                          (characters  (char-by-char lines))
+                          (is-py-var (equal (om-py::concatstring (om::first-n characters 8)) "#(py_var")))
+                          (if is-py-var
+                              nil
+                              lines))))) ;;  remove 
+        
+;; ============
 
 (defun py-name-of-file (p)
   (let ((path (and p (pathname p))))
@@ -296,16 +333,18 @@
 ; Functions to be used in the patches METHODS
 ; =======================================================
 
-(defmethod! run-py ((code to-om) &optional (cabecario nil))
+
+(defmethod! run-py ((code om2py) &optional (cabecario nil))
 :initvals '(nil)
 :indoc '("run py") 
 :icon 'py-f
-:doc ""
+:doc "With this object you can see the index parameters of some VST2 plugin."
+
+
+(if om::*vscode-is-openned* (let () (print "You need to close VScode to update the code")))
 
 (let* (
-      (python-code (x-append cabecario " 
-
-"                                   (py-inside-om code)))
+      (python-code (x-append cabecario (string #\Newline) (om-py::py-om code)))
       (python-name (om::string+ "py-code-temp-" (write-to-string (om-random 10000 999999)) ".py"))
       (data-name (om::string+ "data" (write-to-string (om-random 10000 999999)) ".txt"))
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
@@ -323,15 +362,6 @@
                                             nil
                                            (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
 
-;; ================================================
-
-(defmethod! run-py ((code om2py) &optional (cabecario nil))
-:initvals '(nil)
-:indoc '("run py") 
-:icon 'py-f
-:doc "With this object you can see the index parameters of some VST2 plugin."
-
-(run-py (om::make-value 'to-om (list (list :py-inside-om (py-om code)))) cabecario))
 
 ;; ================================================
 
@@ -341,14 +371,13 @@
 :icon 'py-f
 :doc "With this object you can see the index parameters of some VST2 plugin."
 
-(read_from_python (run-py (om::make-value 'to-om (list (list :py-inside-om (code code)))) 
+(run-py (om::make-value 'om2py (list (list :py-om (code code)))) 
                           (case (type-of cabecario)
                                 ('|om-python|::py-externals-mod  (modules cabecario))
                                 ('|om-python|::om2py (py-om cabecario))
                                 ('|om-python|::py-code (code cabecario))
-                                ('string cabecario)))))
+                                ('string cabecario))))
                                 
-
 ;; ========================
 
 (defmethod! py-add-var ((function function) &rest rest)
@@ -376,7 +405,7 @@
 
 ;; ========================
 
-(defmethod! add-python-modules (&key (import nil) (from_import nil) (import* nil))
+(defmethod! py-add-ext-modules (&key (import nil) (from_import nil) (import* nil))
 :initvals '("math" ("math" "sum") "math")
 :indoc '("import YOURMODULE" "from YOURMODULE import YOURFUNCTION" "import YOURMODULE*") 
 :icon 'py-f
@@ -409,7 +438,7 @@ except ImportError:
 from om_py import to_om
 "))
       (all_code (om-py::concatstring (x-append om_py verification-module)))
-      (check-the-modules (om-py::run-py (om::make-value 'to-om (list (list :py-inside-om all_code))))))                 
+      (check-the-modules (om-py::run-py (om::make-value 'om2py (list (list :py-om all_code))))))                 
       (loop :for not_installed :in check-the-modules 
             :do 
                   (let* (
