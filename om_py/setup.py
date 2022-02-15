@@ -1,5 +1,5 @@
 # python setup.py sdist bdist_wheel
-# 
+# twine upload dist/*
 from setuptools import setup, find_packages
 import codecs
 import os
@@ -23,7 +23,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['vamphost', 'html_to_json'],
+    install_requires=['vamphost', 'html_to_json', 'pyo'],
     keywords=['python', 'music', 'OpenMusic'],
     classifiers=[
         "Operating System :: Unix",

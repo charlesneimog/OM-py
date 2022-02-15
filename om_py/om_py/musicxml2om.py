@@ -208,7 +208,6 @@ def musicxml2om(musicxml_file):
     with open(musicxml_file, 'r') as f:
         html_string = f.read()
 
-
     output_json = html_to_json.convert(html_string)
 
     keys = output_json["score-partwise"] #  Pega toda a partitura e seus dados.
@@ -563,8 +562,8 @@ def musicxml2om(musicxml_file):
         PITCHES_BY_VOICES.append(PITCHES_BY_MEASURE) 
         DYNAMICS_BY_VOICE.append(DYNAMICS_BY_MEASURE) 
 
-    to_om(RHYTHMIC_BY_VOICE)
-    to_om(PITCHES_BY_VOICES)
-    to_om(DYNAMICS_BY_VOICE)
+    to_om(list(RHYTHMIC_BY_VOICE))
+    to_om(list(PITCHES_BY_VOICES))
+    to_om(list(DYNAMICS_BY_VOICE))
 
 # =============================================================================
