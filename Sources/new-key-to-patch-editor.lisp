@@ -1,7 +1,7 @@
 (in-package :om)
 
 ;; ==========================================================================
-(defparameter *vscode-is-openned* nil)
+(defvar *vscode-is-openned* nil)
 
 (defun open-vscode (selected-boxes)
 
@@ -17,7 +17,7 @@
        (mp:process-run-function (string+ "VSCODE Running!") ;; Se não, a interface do OM trava
                                    () 
                                           (lambda () (vs-code-update-py-box path selected-boxes (second vs-code))))
-       (defparameter *vscode-is-openned* t)))
+       (defvar *vscode-is-openned* t)))
     
 
 ;; ;; ==========================================================================
@@ -41,7 +41,7 @@
        (copy-contents from-box to-box)
        (compile-patch to-box)
        (update-from-reference (car selected-boxes))
-       (defparameter *vscode-is-openned* nil)
+       (defvar *vscode-is-openned* nil)
        (om-py::clear-the-file path)
        (om::om-print "Closing VScode!" "OM-Py")))
        
@@ -146,6 +146,9 @@
                (defparameter *vscode-opened* t)
                (open-vscode selected-boxes))))
 
+
+       ;; ================================================================
+
         (#\1 (unless (or (edit-lock editor) (get-pref-value :general :auto-ev-once-mode))
                (when selected-boxes
                  (store-current-state-for-undo editor)
@@ -223,3 +226,151 @@
 
         (otherwise nil))
       )))
+
+
+
+;; ====================================================================================================
+
+(defmethod load-om-library ((lib OMLib))
+  (let ((lib-file (lib-loader-file lib)))
+    (if lib-file
+        (handler-bind ((error #'(lambda (c)
+                                  (progn
+                                    (om-message-dialog (format nil "Error while loading the library ~A:~%~s"
+                                                               (name lib) (format nil "~A" c)))
+                                    (abort c)))))
+
+          (om-print-format "~%~%Loading library: ~A..." (list lib-file))
+          (let* ((*current-lib* lib)
+                 (file-contents (list-from-file lib-file))
+                 (lib-data (find-values-in-prop-list file-contents :om-lib))
+                 (version (find-value-in-kv-list lib-data :version))
+                 (author (find-value-in-kv-list lib-data :author))
+                 (doc (find-value-in-kv-list lib-data :doc))
+                 (files (find-values-in-prop-list lib-data :source-files))
+                 (symbols (find-values-in-prop-list lib-data :symbols)))
+
+            ;;; update the metadata ?
+            (setf (version lib) version
+                  (doc lib) doc
+                  (author lib) author)
+
+            (CleanupPackage lib)
+
+            ;;; load sources
+            (with-relative-ref-path
+                (mypathname lib)
+
+              ;;; temp: avoid fasl conflicts for now
+              ;; (cl-user::clean-sources (mypathname lib))
+
+              (mapc #'(lambda (f)
+                        (let ((path (omng-load f)))
+
+                          ;;; supports both pathnames "om-formatted", and raw pathnames and strings
+                          (when (equal (car (pathname-directory path)) :relative)
+                            ;;; merge-pathname is not safe here as it sets the pathname-type to :unspecific (breaks load/compile functions)
+                            (setf path (om-relative-path (cdr (pathname-directory path)) (pathname-name path) (mypathname lib)))
+                            )
+
+                          (if (string-equal (pathname-name path) "load") ; hack => document that !!
+                              (load path)
+                            (compile&load path t t (om::om-relative-path '(".om#") nil path)))
+                          ))
+                    files)
+              )
+            ;;; set packages
+              (mapc #'(lambda (class) (addclass2pack class lib))
+                  (find-values-in-prop-list symbols :classes))
+              (mapc #'(lambda (fun) (addFun2Pack fun lib))
+                  (find-values-in-prop-list symbols :functions))
+
+
+              (mapc #'(lambda (item)
+                      (addspecialitem2pack item lib))
+                  (find-values-in-prop-list symbols :special-items))
+
+            (mapc #'(lambda (pk)
+                      (let ((new-pack (omng-load pk)))
+                        (addpackage2pack new-pack lib)))
+                  (find-values-in-prop-list symbols :packages))
+
+            (set-om-pack-symbols) ;; brutal...
+
+            (register-images (lib-icons-folder lib))
+
+            (setf (loaded? lib) t)
+            (update-preference-window-module :libraries) ;;; update if the window is opened
+            (update-preference-window-module :externals) ;;; update if the window is opened
+
+            (gen-lib-reference lib)
+
+            (om-print-format "~%==============================================")
+            (om-print-format "~A ~A" (list (name lib) (or (version lib) "")))
+            (when (doc lib) (om-print-format "~&~A" (list (doc lib))))
+            (om-print-format "==============================================")
+
+            lib-file))
+
+      (om-beep-msg "Library doesn't have a loader file: ~A NOT FOUND.."
+                   (om-make-pathname :directory (mypathname lib) :name (name lib) :type "olib")))
+    ))
+
+
+;; ====================================================================================================
+
+(defmethod om-load-from-id ((id (eql :package)) data)
+  (let* ((name (find-value-in-kv-list data :name))
+         (pack (make-instance 'OMPackage :name (or name "Untitled Package"))))
+    (mapc #'(lambda (class) (addclass2pack class pack)) (find-values-in-prop-list data :classes))
+    (mapc #'(lambda (fun) (addFun2Pack fun pack)) (find-values-in-prop-list data :functions))
+    (mapc #'(lambda (item) (addspecialitem2pack item pack)) (find-values-in-prop-list data :special-items))
+    (mapc #'(lambda (spk)
+              (let ((sub-pack (omng-load spk)))
+                (addpackage2pack sub-pack pack)))
+          (find-values-in-prop-list data :packages))
+
+    pack))
+
+;; ====================================================================================================
+
+(defun make-libs-tab ()
+  (let ((libs-tree-view (om-make-tree-view (subpackages *om-libs-root-package*)
+                                           :size (omp 120 20)
+                                           :expand-item 'get-sub-items
+                                           :print-item 'get-name
+                                           :font (om-def-font :font1)
+                                           :bg-color (om-def-color :light-gray)
+                                           :item-icon #'(lambda (item) (get-icon item))
+                                           :icons (list :icon-pack 
+                                                        :icon-fun 
+                                                        :icon-genfun 
+                                                        :icon-class 
+                                                        :icon-special 
+                                                        :icon-lib-loaded 
+                                                        :icon-lib)
+                                           ))
+        (side-panel
+         (om-make-di
+          'om-multi-text
+          :size (om-make-point nil nil)
+          :font (om-def-font :font1)
+          :fg-color (om-def-color :dark-gray)
+          :text *libs-tab-text*)))
+
+    (om-make-layout
+     'om-row-layout :name "External Libraries"
+     :subviews (list
+                (om-make-layout
+                 'om-column-layout  :align :right
+                 :subviews (list libs-tree-view
+                                 (om-make-di 'om-button :size (om-make-point nil 24)
+                                             :font (om-def-font :font2)
+                                             :text "Refresh list"
+                                             :di-action #'(lambda (b)
+                                                            (declare (ignore b))
+                                                            (update-registered-libraries)
+                                                            (update-libraries-tab *main-window*)))))
+                :divider
+                side-panel))
+    ))
