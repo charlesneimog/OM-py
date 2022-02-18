@@ -1,0 +1,19 @@
+(:om-lib
+
+(:version 0.1.1)
+(:doc "")
+(:author "Charles K. Neimog")
+
+ ;;; SOURCE FILES TO LOAD
+
+(:source-files
+      "Sources/package.lisp"
+      "Sources/utilities"
+      "Sources/py"
+      "Sources/new-key-to-patch-editor"
+      )
+
+(:symbols 
+      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-modules" "om-py::py-mk-list")
+      (:class "om-py::run-py")
+      (:special-items py py-mkcode)))
