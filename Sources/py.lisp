@@ -14,6 +14,7 @@
 ;============================================================================
 
 (in-package :om)
+
 ;;; ==========================================================================
 
 (defclass OMPYFunction (OMProgrammingObject)
@@ -52,10 +53,10 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 
 ;; ======
 
-(defmethod omNG-make-special-box ((reference (eql 'py-mkcode)) pos &optional init-args)
+(defmethod omNG-make-special-box ((reference (eql 'py-code)) pos &optional init-args)
   (omNG-make-new-boxcall
    (make-instance 'OMPyFunctionInternal
-                  :name (if init-args (format nil "~A" (car (list! init-args))) "Py-mkcode")
+                  :name (if init-args (format nil "~A" (car (list! init-args))) "py-code")
                   :text *default-py-function-text*)
           pos init-args))
 
@@ -77,6 +78,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 
 ;; ======
 
+#|
 (defmethod compile-patch ((self OMPYFunction))
   "Compilation of a py function"
     (setf (error-flag self) nil)
@@ -88,7 +90,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
                         (let* (
                               (var (car (cdr lambda-expression)))
                               (code (flat (x-append (list (second (cdr lambda-expression))) (list var)) 1))
-                              (py-code (list `(make-value (quote om-py::py-code) (list (list :code (format nil ,@code)))))))
+                              (py-code (list `(make-value (quote om-py::python) (list (list :code (format nil ,@code)))))))
                               `(defun ,(intern (string (compiled-fun-name self)) :om) 
                                               ,var ;;variaveis da funcao
                                               ,@py-code ;;codigo da funcao
@@ -99,11 +101,41 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
     (compile (eval function-def))))
 
 
+|#
+
+(defmethod compile-patch ((self OMPYFunction))
+  "Compilation of a py function"
+    (setf (error-flag self) nil)
+    (let* (
+      (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
+      (var (car (cdr lambda-expression)))
+      (python-var (mapcar (lambda (y) `(om::string+ ,y)) (mapcar (lambda (x) (string+ (write-to-string x) " " "= ")) var)))
+      (format2python (mapcar (lambda (x) `(om-py::format2python-v3 ,x)) var))
+      (lisp-var2py-var (mapcar (lambda (x y) (list `(,@x ,y (string #\Newline)))) python-var format2python))
+      (python-string (list (second (cdr lambda-expression))))
+      (code (om::flat `(,@lisp-var2py-var ,python-string) 1))
+      (add-append (list `(x-append ,@code nil)))
+      (py-code (list `(om::make-value (quote om-py::python) (list (list :code (om-py::concatstring ,@add-append ))))))
+      (function-def
+            (if (and lambda-expression (python-expression-p lambda-expression))
+                  (progn (setf (compiled? self) t)
+                          `(defun ,(intern (string (compiled-fun-name self)) :om) 
+                                              ,var  
+                                              ,@py-code))                                                       
+                  (progn (om-beep-msg "ERROR ON PY FORMAT!!")
+                        (setf (error-flag self) t)
+                       `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
+(compile (eval function-def))))
+
+
+
+
+
 ;;;===================
 ;;; py FUNCTION BOX
 ;;;===================
 
-(defmethod special-box-p ((name (eql 'py-mkcode))) t)
+(defmethod special-box-p ((name (eql 'py-code))) t)
 
 ;; ======
 
@@ -342,7 +374,7 @@ to_om(list_of_numbers)
 (defmethod omNG-make-special-box ((reference (eql 'py)) pos &optional init-args)
   (omNG-make-new-boxcall
    (make-instance 'run-py-f-internal
-                  :name (if init-args (format nil "~A" (car (list! init-args))) "    py    ")
+                  :name (if init-args (format nil "~A" (car (list! init-args))) "   py-run    ")
                   :text *default-py-run-function-text*)
    pos init-args))
 
@@ -384,7 +416,7 @@ to_om(list_of_numbers)
       (python-string (list (second (cdr lambda-expression))))
       (code (om::flat `(,@lisp-var2py-var ,python-string) 1))
       (add-append (list `(x-append ,@code nil)))
-      (py-code (list `(om-py::run-py (om::make-value (quote om-py::py-code) (list (list :code (om-py::concatstring ,@add-append )))))))
+      (py-code (list `(om-py::run-py (om::make-value (quote om-py::python) (list (list :code (om-py::concatstring ,@add-append )))))))
       (function-def
             (if (and lambda-expression (python-expression-p lambda-expression))
                   (progn (setf (compiled? self) t)
@@ -396,37 +428,6 @@ to_om(list_of_numbers)
                        `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
 (compile (eval function-def))))
 
-
-#| Original until v. 0.1.0
-
-(defmethod compile-patch ((self run-py-f))
-  "Compilation of a py function"
-    (setf (error-flag self) nil)
-    (let* (
-      (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
-      (var (car (cdr lambda-expression)))
-      ;(test (print var))
-      (format2python (mapcar (lambda (x) `(om-py::format2python ,x)) var))
-      (code (om::flat (om::x-append 
-                                          (list (second (cdr lambda-expression))) ;; CÓDIGO
-                                          (list format2python)) 1)) ;; AQUI
-
-
-
-      (py-code (list `(om-py::run-py (om::make-value (quote om-py::py-code) (list (list :code (format nil ,@code)))))))
-      (function-def
-            (if (and lambda-expression (python-expression-p lambda-expression))
-                  (progn (setf (compiled? self) t)
-                          `(defun ,(intern (string (compiled-fun-name self)) :om) 
-                                              ,var  
-                                              ,@py-code))                                                       
-                  (progn (om-beep-msg "ERROR ON PY FORMAT!!")
-                        (setf (error-flag self) t)
-                       `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
-(print function-def)
-(compile (eval function-def))))
-
-|#
 ;;;===================
 ;;; py FUNCTION BOX
 ;;;===================

@@ -2,9 +2,6 @@
 (in-package :om-py)
 
 
-
-
-
 ; ==================================
 (defun py-list->string (ckn-list)
   (when ckn-list
@@ -164,21 +161,10 @@
       (om::flat (loop :for x :in list :collect (x-append x ", "))))
 
 
-;; ================================================ BRING TO OM ===========
-
-;(om::defclass! to-om ()
- ;   ((py-inside-om :initform nil :initarg :py-inside-om :accessor py-inside-om)))
-
 ;; ================================================ PY CODE INSIDE OM ===========
 
-(om::defclass! py-code ()
+(om::defclass! python ()
     ((code :initform nil :initarg :code :accessor code)))
-
-
-;; ================ Python Code Editor Inside OM =================
-
-(om::defclass! om2py ()
-    ((py-om :initform nil :initarg :py-om :accessor py-om)))
 
 ;; ================
 
@@ -369,7 +355,7 @@
 ; =======================================================
 
 
-(defmethod! run-py ((code om2py) &optional (cabecario nil))
+(defmethod! run-py ((code python) &optional (cabecario nil))
 :initvals '(nil)
 :indoc '("run py") 
 :icon 'py-f
@@ -379,7 +365,7 @@
 (if om::*vscode-is-openned* (let () (print "You need to close VScode to update the code")))
 
 (let* (
-      (python-code (x-append cabecario (string #\Newline) (om-py::py-om code)))
+      (python-code (x-append cabecario (string #\Newline) (om-py::code code)))    
       (python-name (om::string+ "py-code-temp-" (write-to-string (om-random 10000 999999)) ".py"))
       (data-name (om::string+ "data" (write-to-string (om-random 10000 999999)) ".txt"))
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
@@ -391,28 +377,13 @@
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
-            ;(mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
+            (mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
             (mp:process-run-function "del-data-code" () (lambda (x) (clear-the-file x)) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
             (read_from_python (if   (null data)        
                                             nil
                                            (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
 
-
-;; ================================================
-
-(defmethod! run-py ((code py-code) &optional (cabecario nil))
-:initvals '(nil)
-:indoc '("run py") 
-:icon 'py-f
-:doc "With this object you can see the index parameters of some VST2 plugin."
-
-(run-py (om::make-value 'om2py (list (list :py-om (code code)))) 
-                          (case (type-of cabecario)
-                                ('|om-python|::py-externals-mod  (modules cabecario))
-                                ('|om-python|::om2py (py-om cabecario))
-                                ('|om-python|::py-code (code cabecario))
-                                ('string cabecario))))
-                                
+                               
 ;; ========================
 
 (defmethod! py-add-var ((function function) &rest rest)
@@ -424,7 +395,7 @@
 (let* (
       (check-all-rest (loop :for type :in (om::list! rest) :collect (format2python-py-add-var type)))
       (py-var (apply 'mapcar function check-all-rest)))
-      (om::make-value 'py-code (list (list :code (concatstring (mapcar (lambda (x) (code x)) py-var)))))))
+      (om::make-value 'python (list (list :code (concatstring (mapcar (lambda (x) (code x)) py-var)))))))
 
 ;; ========================
 
@@ -434,7 +405,7 @@
 :icon 'py-f
 :doc ""
 
-(om::make-value 'py-code (list (list :code (concatString (loop :for all_codes :in codes :collect (code all_codes)))))))
+(om::make-value 'python (list (list :code (concatString (loop :for all_codes :in codes :collect (code all_codes)))))))
 
 
 
@@ -473,7 +444,7 @@ except ImportError:
 from om_py import to_om
 "))
       (all_code (om-py::concatstring (x-append om_py verification-module)))
-      (check-the-modules (om-py::run-py (om::make-value 'om2py (list (list :py-om all_code))))))                 
+      (check-the-modules (om-py::run-py (om::make-value 'python (list (list :code all_code))))))                
       (loop :for not_installed :in check-the-modules 
             :do 
                   (let* (

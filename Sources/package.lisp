@@ -11,7 +11,6 @@
 ;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 ;
 ;============================================================================
-
 ; File author: Charles K. Neimog (Univerty  of São Paulo - 2021)
 ;============================================================================
 
