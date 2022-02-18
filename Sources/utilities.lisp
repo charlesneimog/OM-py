@@ -2,6 +2,9 @@
 (in-package :om-py)
 
 
+
+
+
 ; ==================================
 (defun py-list->string (ckn-list)
   (when ckn-list
@@ -55,6 +58,25 @@
             #+linux (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
             #+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")      
                                                             )
+
+
+
+;===================================
+(defun format2python-v3 (type)
+    (case (type-of type)
+        (lispworks:simple-text-string (py-list->string (list (list type))))
+        (sound (let* (
+                      (filepathname (namestring (car (if (not (file-pathname type)) 
+                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
+                                                         (list (file-pathname type)))))))
+                                    (om::string+ "r" "'" filepathname "'")))
+        (fixnum (write-to-string type))
+        (float (write-to-string type))
+        (cons (let* (
+                        (conteudo (loop :for atom :in type :collect (concatString (om::x-append (format2python-v3 atom) '(", "))))))
+                        (concatString (om::x-append "[" conteudo "]"))))
+        (single-float (write-to-string type))
+        (pathname  (py-list->string  (list (namestring type))))))
 
 ; =================================================
 
@@ -283,7 +305,7 @@
   (let* ((y-grid 24)
          (win (om::om-make-window 'om::om-dialog :position :centered
                               :resizable t :maximize nil :minimize nil :owner nil
-                              :title (format nil "The module ~d is not installed!" name))))
+                              :title (format nil "~d The module ~d is not installed! ~d" (string #\NewLine) name (string #\NewLine)))))
     (om::om-add-subviews
      win
      (om::om-make-layout
@@ -292,8 +314,9 @@
       (list
 
        (om::om-make-di 'om::om-simple-text
-                   :size (om::om-make-point 350 y-grid)
-                   :text (format nil "Do you want to install ~d?" name))
+                   :size (om::om-make-point 330 34)
+                  ; :font-size
+                   :text (format nil "~d Do you want to install ~d ~d?" (string #\NewLine) name (string #\NewLine)))
 
        (om::om-make-layout
         'om::om-row-layout
@@ -356,7 +379,7 @@
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
-            (mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
+            ;(mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
             (mp:process-run-function "del-data-code" () (lambda (x) (clear-the-file x)) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
             (read_from_python (if   (null data)        
                                             nil
@@ -476,3 +499,11 @@ from om_py import to_om" format-import format-from_import))))
 :doc ""
 
 (lisp-list_2_python-list list))
+
+;==================================
+
+(defun lista-de-que? (x)
+
+(remove-dup (loop :for class :in x :collect (type-of class)) 'eq 1))
+
+
