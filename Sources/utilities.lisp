@@ -76,6 +76,7 @@
                         (conteudo (loop :for atom :in type :collect (concatString (om::x-append (format2python-v3 atom) '(", "))))))
                         (concatString (om::x-append "[" conteudo "]"))))
         (single-float (write-to-string type))
+        (null " None")
         (pathname  (py-list->string  (list (namestring type))))))
 
 ; =================================================
@@ -198,8 +199,8 @@
 
 (defun char-by-char (string)
 
-   (loop for idex from 0 to (- (length string) 1)
-      collect 
+   (loop :for idex :from 0 :to (- (length string) 1)
+         :collect 
          (string (aref string idex))))
 
 ;https://stackoverflow.com/questions/18065996/loop-over-characters-in-string-common-lisp
@@ -241,6 +242,17 @@
                               nil
                               lines))))) ;;  remove 
         
+;===============================
+
+(defun remove-py-var (code var)
+  (let* (
+        (var-1 (first var))
+        (remove-from-code (remove nil (mapcar (lambda (x) (if (null (search var-1 x)) x)) code)))
+        (cdr-var (cdr var)))
+        (if (null cdr-var)
+            remove-from-code
+          (remove-py-var remove-from-code cdr-var))))
+
 ;; ============
 
 (defun py-name-of-file (p)

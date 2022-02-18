@@ -1,7 +1,10 @@
 (in-package :om)
 
 ;; ==========================================================================
-(defvar *vscode-is-openned* nil)
+
+(defparameter *vscode-is-openned* nil)
+
+;; ==========================================================================
 
 (defun open-vscode (selected-boxes)
 
@@ -9,28 +12,48 @@
        (vs-code (read-from-string 
                      (reduce #'(lambda (s1 s2) 
                             (concatenate 'string s1 (string #\Newline) s2)) (text (reference (car (om::list! selected-boxes))))) nil))
+       (var (car (cdr vs-code)))
        (add-lisp-var (om::string+ "#(" (write-to-string (first vs-code)) " " (write-to-string (second vs-code))))
+       (python-var (mapcar (lambda (y) `(om::string+ ,y)) (mapcar (lambda (x) (string+ (write-to-string x) " " "= ")) var)))
+       (input-values (mapcar (lambda (x) (omng-box-value x)) (inputs (car (om::list! selected-boxes))))) ;; get input values
+       (separation (om::string+ "# ======================= Add Variables Just above this Line ========================" (string #\Newline)))
+       (format2python (mapcar (lambda (x) (om-py::format2python-v3 x)) input-values))
+       (lisp-var2py-var (mapcar (lambda (x y) `(,@x ,y (string #\Newline))) python-var (om::list! format2python)))
+       (lisp-2-python-var (eval `(om-py::concatstring (om::x-append ,@lisp-var2py-var nil nil))))
+       
        (path (om::save-as-text 
-                     (om::string+ add-lisp-var (string #\Newline) (third vs-code))
+                     (om::string+ add-lisp-var (string #\Newline) (string #\Newline) lisp-2-python-var separation (third vs-code))
                      (om::tmpfile (om::string+ "tmp-code-" (write-to-string (om::om-random 100 999)) ".py") :subdirs "om-py"))))
        
        (mp:process-run-function (string+ "VSCODE Running!") ;; Se não, a interface do OM trava
                                    () 
                                           (lambda () (vs-code-update-py-box path selected-boxes (second vs-code))))
-       (defvar *vscode-is-openned* t)))
+       (setq *vscode-is-openned* t)))
     
-
 ;; ;; ==========================================================================
 
 (defun vs-code-update-py-box (path selected-boxes variables) ;; Precisa ser um método????
 
 (let* (
+       
        (wait-edit-process (oa::om-command-line (om::string+ "code " (namestring path) " -w") nil))
+       
        (get-var-in-py (car (om-py::get-lisp-variables path)))
-       (remove-var-in-py (om-py::remove-lisp-var path))
+       (remove-all-non-lisp-text  (let* (
+                                        (remove-var-in-py (om-py::remove-lisp-var path))
+                                        (string get-var-in-py)
+                                        (var (om-py::concatstring (om::last-n (om-py::char-by-char string) (- (length (om-py::char-by-char string)) 8))))
+                                        (var-fix (remove ")" var :test (lambda (a b) (eql (aref a 0) b))))
+                                        (var-fix (remove "(" var-fix :test (lambda (a b) (eql (aref a 0) b))))
+                                        (all-var-names (om::string-to-list var-fix " "))
+                                        (remake-init-of-var-definition (mapcar (lambda (x) (om::string+ x " " "=" " ")) all-var-names))
+                                        (remove-py-var (om-py::remove-py-var remove-var-in-py remake-init-of-var-definition))
+                                        (remove-notice (om-py::remove-py-var remove-py-var '("# ======================= Add Variables Just above this Line ========================")))
+                                        (remove-linha-a-mais (if (equal (car remove-py-var) "") (cdr remove-notice) remove-notice)))
+                                        (if (equal (car (last remove-linha-a-mais)) "") (om::first-n remove-linha-a-mais (- (length remove-linha-a-mais) 1)) remove-linha-a-mais)))     
        (read-edited-code 
               (om-py::py-list->string (list 
-                                          (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-var-in-py)))))
+                                          (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
        (variables-in-lisp   (if    (null get-var-in-py)
                                    (x-append (om::string+ "(py_var " (write-to-string variables)) read-edited-code ")")
                                    (x-append get-var-in-py read-edited-code ")")))
@@ -41,7 +64,7 @@
        (copy-contents from-box to-box)
        (compile-patch to-box)
        (update-from-reference (car selected-boxes))
-       (defvar *vscode-is-openned* nil)
+       (setq *vscode-is-openned* nil)
        (om-py::clear-the-file path)
        (om::om-print "Closing VScode!" "OM-Py")))
        
