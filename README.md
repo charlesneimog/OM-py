@@ -72,3 +72,6 @@ To make sure that all things are working:
 * Then go to Help-> Help Patches... -> om-py
 * Then open the path *use-py-inside-om*.
 * Then evaluate the patch!
+
+## MacOS
+
