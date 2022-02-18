@@ -26,9 +26,6 @@ To install OM External Libraries see the process in: https://cac-t-u-s.github.io
 
 # Install Python
 
-To install Python on Windows, you first need to download Python 3.9 from the Python website.
-
-
 ## Windows
 
 To install Python on Windows you need first download Python 3.9 in the Python website. 
@@ -72,3 +69,6 @@ To make sure that all things are working:
 * Then go to Help-> Help Patches... -> om-py
 * Then open the path *use-py-inside-om*.
 * Then evaluate the patch!
+
+## MacOS
+
