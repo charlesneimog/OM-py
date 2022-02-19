@@ -17,16 +17,16 @@ Go to https://github.com/cac-t-u-s/om-sharp/releases/ and download it from your 
 
 
 
-# Install OM Libraries
+## Install OM Libraries
 
 To install OM External Libraries see the process in: https://cac-t-u-s.github.io/pages/libraries!
 
 
 
 
-# Install Python
+## Install Python
 
-## Windows
+### Windows
 
 To install Python on Windows you need first download Python 3.9 in the Python website. 
 
@@ -56,7 +56,7 @@ To make sure that all things are working:
 If you heard a sound probably, it is working!! If not, please let me know!
 
 
-## Linux
+### Linux
 
 In Linux the process is a little more simple!
 * Open the terminal;
@@ -70,5 +70,5 @@ To make sure that all things are working:
 * Then open the path *use-py-inside-om*.
 * Then evaluate the patch!
 
-## MacOS
+### MacOS
 
