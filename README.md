@@ -29,7 +29,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 ```
 With `my_om_number` inside py_var it will open and input in the `py` box. 
 
-<img src="https://user-images.githubusercontent.com/31707161/154814603-fdd34ca7-6e6d-4d3c-9c53-4d401eebc769.png" width="586" height="150">
+<img src="https://user-images.githubusercontent.com/31707161/154814603-fdd34ca7-6e6d-4d3c-9c53-4d401eebc769.png" width="750" height="250">
 
 -----------------------------------------------------
 
