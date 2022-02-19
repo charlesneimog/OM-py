@@ -10,7 +10,7 @@ With this library will be able to:
 * All that Python could do.
 
 
-# Install OM-Sharp
+## Install OM-Sharp
 
 Go to https://github.com/cac-t-u-s/om-sharp/releases/ and download it from your plataform!
 
