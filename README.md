@@ -62,10 +62,10 @@ If you heard a sound probably, it is working!! If not, please let me know!
 
 In Linux the process is a little more simple!
 * Open the terminal;
-* If you have no python in your machine (improbable) type `sudo apt install python3.8`. 
-* Then install pip typing, `sudo apt-get -y install python3-pip`.
-* Install Virtual Env: `sudo apt install python3.8-venv`.
-* Then create the om-py Virtual Env: `python3.8 -m venv YOUR_OM_TEMP_FOLDER/Python`. 
+* If you have no python in your machine (improbable) type `sudo apt install python3.8` 
+* Then install pip typing, `sudo apt-get -y install python3-pip`
+* Install Virtual Env: `sudo apt install python3.8-venv`
+* Then create the om-py Virtual Env: `python3.8 -m venv YOUR_OM_TEMP_FOLDER/Python`
 
 ![Tmp Files](https://github.com/charlesneimog/OM-py/blob/master/Documentation/tmp-file%20example.png)
 
