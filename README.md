@@ -29,13 +29,13 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 ```
 With `my_om_number` inside py_var it will open and input in the `py` box. 
 
-<img src="https://user-images.githubusercontent.com/31707161/154814603-fdd34ca7-6e6d-4d3c-9c53-4d401eebc769.png" width="750" height="250">
+<img src="https://user-images.githubusercontent.com/31707161/154814603-fdd34ca7-6e6d-4d3c-9c53-4d401eebc769.png" width=75% height=75%>
 
 -----------------------------------------------------
 
 OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
 
-<img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width="800" height="550">
+<img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=75% height=75%>
 
 
 With this library will be able to:
