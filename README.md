@@ -35,7 +35,7 @@ With `my_om_number` inside py_var it will open and input in the `py` box.
 
 OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
 
-<img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=75% height=75%>
+<img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=100% height=100%>
 
 
 With this library will be able to:
