@@ -109,3 +109,5 @@ To make sure that all things are working:
 
 ### MacOS
 
+Coming soon!! I need a MacOS computer!
+
