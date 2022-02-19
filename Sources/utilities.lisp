@@ -61,7 +61,9 @@
 ;===================================
 (defun format2python-v3 (type)
     (case (type-of type)
-        (lispworks:simple-text-string (py-list->string (list (list type))))
+        (lispworks:simple-text-string (if (null (probe-file type))
+                                          (py-list->string (list (list type)))
+                                          (py-list->string (list (namestring type)))))
         (sound (let* (
                       (filepathname (namestring (car (if (not (file-pathname type)) 
                                                          (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
@@ -69,11 +71,13 @@
                                     (om::string+ "r" "'" filepathname "'")))
         (fixnum (write-to-string type))
         (float (write-to-string type))
+        
         (cons (let* (
                         (conteudo (loop :for atom :in type :collect (concatString (om::x-append (format2python-v3 atom) '(", "))))))
                         (concatString (om::x-append "[" conteudo "]"))))
         (single-float (write-to-string type))
         (null " None")
+        (symbol (if (equal type 't) " True" type)) 
         (pathname  (py-list->string  (list (namestring type))))))
 
 ; =================================================
@@ -355,17 +359,17 @@
 ; =======================================================
 
 
-(defmethod! run-py ((code python) &optional (cabecario nil))
+(defmethod! run-py ((code python) &key (cabecario nil) (remove-tmpfile t))
 :initvals '(nil)
 :indoc '("run py") 
 :icon 'py-f
 :doc "With this object you can see the index parameters of some VST2 plugin."
 
 
-(if om::*vscode-is-openned* (let () (print "You need to close VScode to update the code")))
+(if om::*vscode-is-openned* (let () (print "You need to close VScode to update the code") (om::abort))) ;; MAKE A DIALOG
 
 (let* (
-      (python-code (x-append cabecario (string #\Newline) (om-py::code code)))    
+      (python-code (code (py-append-code cabecario code)))
       (python-name (om::string+ "py-code-temp-" (write-to-string (om-random 10000 999999)) ".py"))
       (data-name (om::string+ "data" (write-to-string (om-random 10000 999999)) ".txt"))
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
@@ -377,8 +381,8 @@
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
-            (mp:process-run-function "del-py-code" () (lambda (x) (clear-the-file x)) (om::tmpfile python-name :subdirs "om-py"))
-            (mp:process-run-function "del-data-code" () (lambda (x) (clear-the-file x)) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
+            (mp:process-run-function "del-py-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (om::tmpfile python-name :subdirs "om-py"))
+            (mp:process-run-function "del-data-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
             (read_from_python (if   (null data)        
                                             nil
                                            (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
@@ -405,8 +409,19 @@
 :icon 'py-f
 :doc ""
 
-(om::make-value 'python (list (list :code (concatString (loop :for all_codes :in codes :collect (code all_codes)))))))
+(om::make-value 'om-py::python (list (list :code (concatString (loop :for code :in codes :collect (if (null code)
+                                                                                                      nil 
+                                                                                                    (code code))))))))
 
+;; ========================
+
+(defmethod! py-append-code (&rest rest)
+:initvals '(nil)
+:indoc '("run py") 
+:icon 'py-f
+:doc ""
+
+(py-concat-code (flat (om::x-append rest nil nil))))
 
 
 ;; ========================
