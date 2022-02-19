@@ -5,6 +5,39 @@
 
 OM-py is a bridge between Python and OM environments. What it does is format some types of data that are differently represented. For example, one list of numbers in OM is represented by `(1 2 3 4 5)`. In Python, the same list is represented by `[1, 2, 3, 4, 5]`. Sounds inside OM are represented by a class, for example, `#<sound 23186913>`. To send this `#<sound 23186913>` to Python, we need to save it in a temp folder and then give it to Python by a pathname.
 
+Besides that, it will run the python code, and bring the formatted result to OM. For that, we have two main OM-boxes: `py` and `py-code`. The `py` is like and object and will all results in python that use the function `to_om()`. The example below, will return 4 to om. 
+
+```lisp
+(py_var () 
+"
+from om_py.python_to_om import to_om
+sum = 2 + 2 
+to_om(sum) # If you want to use something inside OM, you need to print it.
+
+"  )
+```
+Use variables inside OM is simple:
+
+```lisp
+(py_var (my_om_number) 
+"
+from om_py.python_to_om import to_om
+sum = 2 + my_om_number
+to_om(sum) # If you want to use something inside OM, you need to print it.
+
+"  )
+```
+With `my_om_number` inside py_var it will open and input in the `py` box. 
+
+<img src="https://user-images.githubusercontent.com/31707161/154814603-fdd34ca7-6e6d-4d3c-9c53-4d401eebc769.png" width="800" height="350">
+
+-----------------------------------------------------
+
+OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
+
+<img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width="1000" height="550">
+
+
 With this library will be able to:
 * Use python scripts using OM variables.
 * Use VST3, vamp-plugins, tools for analisys and others;
@@ -16,14 +49,9 @@ With this library will be able to:
 
 Go to https://github.com/cac-t-u-s/om-sharp/releases/ and download it from your plataform!
 
-
-
-
 ## Install OM Libraries
 
 To install OM External Libraries see the process in: https://cac-t-u-s.github.io/pages/libraries!
-
-
 
 
 ## Install Python
