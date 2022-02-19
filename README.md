@@ -37,6 +37,10 @@ OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
 
 <img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=100% height=100%>
 
+A beautiful example for spatialization:
+
+
+<img src="https://user-images.githubusercontent.com/31707161/154816977-b9e1cef0-796a-457a-8380-f1af2f2093c9.gif" width=100% height=100%> 
 
 With this library will be able to:
 * Use python scripts using OM variables.
