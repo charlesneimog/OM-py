@@ -38,7 +38,7 @@
                   (oa::om-command-line 
                                     #+macosx "pip3 install virtualenv"
                                     #+windows "pip install virtualenv"
-                                    #+linux "sudo apt install python3.8-venv -S"
+                                    ;#+linux "sudo apt install python3.8-venv -S"
                                                                   t)
                   ;; Pip create env 
                   (oa::om-command-line 
