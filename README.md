@@ -70,7 +70,7 @@ In Linux the process is a little more simple!
 ![Tmp Files](https://github.com/charlesneimog/OM-py/blob/master/Documentation/tmp-file%20example.png)
 
 
-In my case: 
+In my case: `python3.8 -m venv /home/neimog/Documents/OM#/temp-files/Python`.
 
 To make sure that all things are working:
 * Open OM-Sharp
