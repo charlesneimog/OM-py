@@ -502,6 +502,17 @@ from om_py import to_om" format-import format-from_import))))
 
 ;==================================
 
+(defmethod! py->text ((python python))
+:initvals '(nil)
+:indoc '("Python class") 
+:icon 'py-f
+:doc ""
+
+(om::make-value 'om::textbuffer (list (list :contents (code python)))))
+
+
+;==================================
+
 (defun lista-de-que? (x)
 
 (remove-dup (loop :for class :in x :collect (type-of class)) 'eq 1))

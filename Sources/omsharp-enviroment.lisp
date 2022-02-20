@@ -162,13 +162,21 @@
 
         
         ;;; OM py Function
-        (#\c (when (and selected-boxes (or (equal (type-of (car (om::list! selected-boxes))) 'omboxpy) 
+        (#\c (if (and selected-boxes (or (equal (type-of (car (om::list! selected-boxes))) 'omboxpy) 
                                            (equal (type-of (car (om::list! selected-boxes))) 'OMBox-run-py)))
-               (let* ()
-               (om::om-print "Opening VScode!" "OM-Py")
-               (defparameter *vscode-opened* t)
-               (open-vscode selected-boxes))))
+                                   
+                                   
+                                   (let* ()
+                                          (om::om-print "Opening VScode!" "OM-Py")
+                                          (defparameter *vscode-opened* t)
+                                          (open-vscode selected-boxes))
 
+
+                                   (unless (edit-lock editor)
+                                           (store-current-state-for-undo editor)
+                                           (if selected-boxes
+                                           (auto-connect-box selected-boxes editor panel)
+                                           (make-new-comment panel)))))
 
        ;; ================================================================
 
@@ -254,149 +262,164 @@
 
 ;; ====================================================================================================
 
-(defmethod load-om-library ((lib OMLib))
-  (let ((lib-file (lib-loader-file lib)))
-    (if lib-file
-        (handler-bind ((error #'(lambda (c)
-                                  (progn
-                                    (om-message-dialog (format nil "Error while loading the library ~A:~%~s"
-                                                               (name lib) (format nil "~A" c)))
-                                    (abort c)))))
+(if (> 1.6 (read-from-string *version-string*))
 
-          (om-print-format "~%~%Loading library: ~A..." (list lib-file))
-          (let* ((*current-lib* lib)
-                 (file-contents (list-from-file lib-file))
-                 (lib-data (find-values-in-prop-list file-contents :om-lib))
-                 (version (find-value-in-kv-list lib-data :version))
-                 (author (find-value-in-kv-list lib-data :author))
-                 (doc (find-value-in-kv-list lib-data :doc))
-                 (files (find-values-in-prop-list lib-data :source-files))
-                 (symbols (find-values-in-prop-list lib-data :symbols)))
+       (let* () 
+              (defmethod load-om-library ((lib OMLib))
+              (let ((lib-file (lib-loader-file lib)))
+              (if lib-file
+                     (handler-bind ((error #'(lambda (c)
+                                          (progn
+                                                 (om-message-dialog (format nil "Error while loading the library ~A:~%~s"
+                                                                             (name lib) (format nil "~A" c)))
+                                                 (abort c)))))
 
-            ;;; update the metadata ?
-            (setf (version lib) version
-                  (doc lib) doc
-                  (author lib) author)
+                     (om-print-format "~%~%Loading library: ~A..." (list lib-file))
+                     (let* ((*current-lib* lib)
+                            (file-contents (list-from-file lib-file))
+                            (lib-data (find-values-in-prop-list file-contents :om-lib))
+                            (version (find-value-in-kv-list lib-data :version))
+                            (author (find-value-in-kv-list lib-data :author))
+                            (doc (find-value-in-kv-list lib-data :doc))
+                            (files (find-values-in-prop-list lib-data :source-files))
+                            (symbols (find-values-in-prop-list lib-data :symbols)))
 
-            (CleanupPackage lib)
+                     ;;; update the metadata ?
+                     (setf (version lib) version
+                            (doc lib) doc
+                            (author lib) author)
 
-            ;;; load sources
-            (with-relative-ref-path
-                (mypathname lib)
+                     (CleanupPackage lib)
 
-              ;;; temp: avoid fasl conflicts for now
-              ;; (cl-user::clean-sources (mypathname lib))
+                     ;;; load sources
+                     (with-relative-ref-path
+                            (mypathname lib)
 
-              (mapc #'(lambda (f)
-                        (let ((path (omng-load f)))
+                            ;;; temp: avoid fasl conflicts for now
+                            ;; (cl-user::clean-sources (mypathname lib))
 
-                          ;;; supports both pathnames "om-formatted", and raw pathnames and strings
-                          (when (equal (car (pathname-directory path)) :relative)
-                            ;;; merge-pathname is not safe here as it sets the pathname-type to :unspecific (breaks load/compile functions)
-                            (setf path (om-relative-path (cdr (pathname-directory path)) (pathname-name path) (mypathname lib)))
+                            (mapc #'(lambda (f)
+                                   (let ((path (omng-load f)))
+
+                                   ;;; supports both pathnames "om-formatted", and raw pathnames and strings
+                                   (when (equal (car (pathname-directory path)) :relative)
+                                          ;;; merge-pathname is not safe here as it sets the pathname-type to :unspecific (breaks load/compile functions)
+                                          (setf path (om-relative-path (cdr (pathname-directory path)) (pathname-name path) (mypathname lib)))
+                                          )
+
+                                   (if (string-equal (pathname-name path) "load") ; hack => document that !!
+                                          (load path)
+                                          (compile&load path t t (om::om-relative-path '(".om#") nil path)))
+                                   ))
+                            files)
                             )
-
-                          (if (string-equal (pathname-name path) "load") ; hack => document that !!
-                              (load path)
-                            (compile&load path t t (om::om-relative-path '(".om#") nil path)))
-                          ))
-                    files)
-              )
-            ;;; set packages
-              (mapc #'(lambda (class) (addclass2pack class lib))
-                  (find-values-in-prop-list symbols :classes))
-              (mapc #'(lambda (fun) (addFun2Pack fun lib))
-                  (find-values-in-prop-list symbols :functions))
+                     ;;; set packages
+                            (mapc #'(lambda (class) (addclass2pack class lib))
+                            (find-values-in-prop-list symbols :classes))
+                            (mapc #'(lambda (fun) (addFun2Pack fun lib))
+                            (find-values-in-prop-list symbols :functions))
 
 
-              (mapc #'(lambda (item)
-                      (addspecialitem2pack item lib))
-                  (find-values-in-prop-list symbols :special-items))
+                            (mapc #'(lambda (item)
+                                   (addspecialitem2pack item lib))
+                            (find-values-in-prop-list symbols :special-items))
 
-            (mapc #'(lambda (pk)
-                      (let ((new-pack (omng-load pk)))
-                        (addpackage2pack new-pack lib)))
-                  (find-values-in-prop-list symbols :packages))
+                     (mapc #'(lambda (pk)
+                                   (let ((new-pack (omng-load pk)))
+                                   (addpackage2pack new-pack lib)))
+                            (find-values-in-prop-list symbols :packages))
 
-            (set-om-pack-symbols) ;; brutal...
+                     (set-om-pack-symbols) ;; brutal...
 
-            (register-images (lib-icons-folder lib))
+                     (register-images (lib-icons-folder lib))
 
-            (setf (loaded? lib) t)
-            (update-preference-window-module :libraries) ;;; update if the window is opened
-            (update-preference-window-module :externals) ;;; update if the window is opened
+                     (setf (loaded? lib) t)
+                     (update-preference-window-module :libraries) ;;; update if the window is opened
+                     (update-preference-window-module :externals) ;;; update if the window is opened
+                     (gen-lib-reference lib)
+                     (om-print-format "~%==============================================")
+                     (om-print-format "~A ~A" (list (name lib) (or (version lib) "")))
+                     (when (doc lib) (om-print-format "~&~A" (list (doc lib))))
+                     (om-print-format "==============================================")
 
-            (gen-lib-reference lib)
+                     lib-file))
 
-            (om-print-format "~%==============================================")
-            (om-print-format "~A ~A" (list (name lib) (or (version lib) "")))
-            (when (doc lib) (om-print-format "~&~A" (list (doc lib))))
-            (om-print-format "==============================================")
-
-            lib-file))
-
-      (om-beep-msg "Library doesn't have a loader file: ~A NOT FOUND.."
-                   (om-make-pathname :directory (mypathname lib) :name (name lib) :type "olib")))
-    ))
+              (om-beep-msg "Library doesn't have a loader file: ~A NOT FOUND.."
+                            (om-make-pathname :directory (mypathname lib) :name (name lib) :type "olib")))
+              ))
 
 
-;; ====================================================================================================
+              ;; ====================================================================================================
 
-(defmethod om-load-from-id ((id (eql :package)) data)
-  (let* ((name (find-value-in-kv-list data :name))
-         (pack (make-instance 'OMPackage :name (or name "Untitled Package"))))
-    (mapc #'(lambda (class) (addclass2pack class pack)) (find-values-in-prop-list data :classes))
-    (mapc #'(lambda (fun) (addFun2Pack fun pack)) (find-values-in-prop-list data :functions))
-    (mapc #'(lambda (item) (addspecialitem2pack item pack)) (find-values-in-prop-list data :special-items))
-    (mapc #'(lambda (spk)
-              (let ((sub-pack (omng-load spk)))
-                (addpackage2pack sub-pack pack)))
-          (find-values-in-prop-list data :packages))
+              (defmethod om-load-from-id ((id (eql :package)) data)
+              (let* ((name (find-value-in-kv-list data :name))
+                     (pack (make-instance 'OMPackage :name (or name "Untitled Package"))))
+              (mapc #'(lambda (class) (addclass2pack class pack)) (find-values-in-prop-list data :classes))
+              (mapc #'(lambda (fun) (addFun2Pack fun pack)) (find-values-in-prop-list data :functions))
+              (mapc #'(lambda (item) (addspecialitem2pack item pack)) (find-values-in-prop-list data :special-items))
+              (mapc #'(lambda (spk)
+                            (let ((sub-pack (omng-load spk)))
+                            (addpackage2pack sub-pack pack)))
+                     (find-values-in-prop-list data :packages))
 
-    pack))
+              pack))
 
-;; ====================================================================================================
+              ;; ====================================================================================================
 
-(defun make-libs-tab ()
-  (let ((libs-tree-view (om-make-tree-view (subpackages *om-libs-root-package*)
-                                           :size (omp 120 20)
-                                           :expand-item 'get-sub-items
-                                           :print-item 'get-name
-                                           :font (om-def-font :font1)
-                                           :bg-color (om-def-color :light-gray)
-                                           :item-icon #'(lambda (item) (get-icon item))
-                                           :icons (list :icon-pack 
-                                                        :icon-fun 
-                                                        :icon-genfun 
-                                                        :icon-class 
-                                                        :icon-special 
-                                                        :icon-lib-loaded 
-                                                        :icon-lib)
-                                           ))
-        (side-panel
-         (om-make-di
-          'om-multi-text
-          :size (om-make-point nil nil)
-          :font (om-def-font :font1)
-          :fg-color (om-def-color :dark-gray)
-          :text *libs-tab-text*)))
+              (defun make-libs-tab ()
+              (let ((libs-tree-view (om-make-tree-view (subpackages *om-libs-root-package*)
+                                                        :size (omp 120 20)
+                                                        :expand-item 'get-sub-items
+                                                        :print-item 'get-name
+                                                        :font (om-def-font :font1)
+                                                        :bg-color (om-def-color :light-gray)
+                                                        :item-icon #'(lambda (item) (get-icon item))
+                                                        :icons (list :icon-pack 
+                                                                      :icon-fun 
+                                                                      :icon-genfun 
+                                                                      :icon-class 
+                                                                      :icon-special 
+                                                                      :icon-lib-loaded 
+                                                                      :icon-lib)
+                                                        ))
+                     (side-panel
+                     (om-make-di
+                     'om-multi-text
+                     :size (om-make-point nil nil)
+                     :font (om-def-font :font1)
+                     :fg-color (om-def-color :dark-gray)
+                     :text *libs-tab-text*)))
 
-    (om-make-layout
-     'om-row-layout :name "External Libraries"
-     :subviews (list
-                (om-make-layout
-                 'om-column-layout  :align :right
-                 :subviews (list libs-tree-view
-                                 (om-make-di 'om-button :size (om-make-point nil 24)
-                                             :font (om-def-font :font2)
-                                             :text "Refresh list"
-                                             :di-action #'(lambda (b)
-                                                            (declare (ignore b))
-                                                            (update-registered-libraries)
-                                                            (update-libraries-tab *main-window*)))))
-                :divider
-                side-panel))
-    ))
+              (om-make-layout
+              'om-row-layout :name "External Libraries"
+              :subviews (list
+                            (om-make-layout
+                            'om-column-layout  :align :right
+                            :subviews (list libs-tree-view
+                                          (om-make-di 'om-button :size (om-make-point nil 24)
+                                                        :font (om-def-font :font2)
+                                                        :text "Refresh list"
+                                                        :di-action #'(lambda (b)
+                                                                      (declare (ignore b))
+                                                                      (update-registered-libraries)
+                                                                      (update-libraries-tab *main-window*)))))
+                            :divider
+                            side-panel))
+              ))))
+
+; ====================================================================================================
+
+(if (equal *app-name* "om-sharp")
+  (let* ()
+          (add-preference-section :externals "OM-py" nil '(:py-enviroment))
+          (add-preference :externals :py-enviroment "Python Enviroment" :path nil)))
 
 
-(print "============================== LOADED ===================================")
+
+
+(if (or (null (get-pref-value :externals :py-enviroment)) (equal (get-pref-value :externals :py-enviroment) ""))
+       nil
+       #+windows (setq om-py::*activate-virtual-enviroment* (om-py::py-list->string (list (get-pref-value :externals :py-enviroment))))
+       #+linux (setq (om::string+ "bash " (get-pref-value :externals :py-enviroment)))
+      ; #+macos (setq (om::string+ "source " (get-pref-value :externals :py-enviroment)))
+)

@@ -10,7 +10,7 @@
       "Sources/package.lisp"
       "Sources/utilities"
       "Sources/py"
-      "Sources/new-key-to-patch-editor"
+      "Sources/omsharp-enviroment"
       )
 
 (:symbols 
