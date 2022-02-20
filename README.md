@@ -37,6 +37,20 @@ OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
 
 <img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=100% height=100%>
 
+-----------------------------------------------------
+## Use your own enviroment
+
+If you want, you can define your own Python enviroment in external: 
+
+![image](https://user-images.githubusercontent.com/31707161/154857500-1623c6b3-98b5-4234-97a9-77bbdac87936.png)
+
+**Copy and paste your `PATH_ENVIROMENT` +:
+
+1. **`Scripts/activate.bat` for Windows;**
+2. **`bin/activate` for Ubuntu.**
+
+-----------------------------------------------------
+
 A beautiful example for spatialization:
 
 
