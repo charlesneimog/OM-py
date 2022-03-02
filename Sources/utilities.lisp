@@ -59,17 +59,28 @@
         
 
 
+;===================================
+(defun save-temp-sounds (sounds &optional if-needed) 
+    (let* (
+            (first-action1 
+                (mapcar 
+                    (lambda (x) (om::string+ "Sound-" if-needed x))
+                        (mapcar (lambda (x) (format nil "~6,'0D" x)) (om::arithm-ser 1 (length (om::list! sounds)) 1)))))
+      
+            (loop :for loop-sound :in (om::list! sounds)
+                :for loop-names :in first-action1
+                :collect (om:save-sound loop-sound (merge-pathnames "om-py/" (om::tmpfile (om::string+ loop-names ".wav")))))))
 
 ;===================================
 (defun format2python-v3 (type)
     (case (type-of type)
         (lispworks:simple-text-string (if (null (probe-file type))
-                                          (py-list->string (list (list type)))
+                                          (py-list->string (list type))
                                           (py-list->string (list (namestring type)))))
         (sound (let* (
-                      (filepathname (namestring (car (if (not (file-pathname type)) 
-                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
-                                                         (list (file-pathname type)))))))
+                      (filepathname (namestring (car (if (not (om::file-pathname type)) 
+                                                         (om::list! (save-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
+                                                         (om::list! (om::file-pathname type)))))))
                                     (om::string+ "r" "'" filepathname "'")))
         (fixnum (write-to-string type))
         (float (write-to-string type))
@@ -80,77 +91,9 @@
         (single-float (write-to-string type))
         (null " None")
         (symbol (if (equal type 't) " True" type)) 
+        ('om::pure-data (py-list->string  (list (namestring (om::pd-path type))))) ;; It will need of OM-CKN????????????? I think not!
         (pathname  (py-list->string  (list (namestring type))))))
 
-; =================================================
-
-(defun add-var-format (type)
-    (case (type-of type)
-        (lispworks:simple-text-string (list type))
-        (sound (let* (
-                      (filepathname (namestring (car (if (not (file-pathname type)) 
-                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
-                                                         (list (file-pathname type)))))))
-                                    (om::string+ "r" "'" filepathname "'")))
-        (fixnum (list (write-to-string type)))
-        (float (write-to-string type))
-        (cons (lisp-list_2_python-list type))
-        (single-float (list (write-to-string type)))
-        (pathname  (list (namestring type)))))
-
-;==================================
-
-(defun format2python-no-cons (type)
-    (case (type-of type)
-        (lispworks:simple-text-string (list type))
-        (sound (let* (
-                      (filepathname (namestring (car (if (not (file-pathname type)) 
-                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
-                                                         (list (file-pathname type)))))))
-                                    (om::string+ "r" "'" filepathname "'")))
-        (fixnum (write-to-string type))
-        (float (write-to-string type))
-        (cons (mapcar (lambda (x) (format2python-py-add-var x)) type))
-        (single-float (write-to-string type))
-        (pathname  (list (namestring type)))))
-
-;==================================
-
-(defun format2python-py-add-var (type)
-    (case (type-of type)
-        (lispworks:simple-text-string (list type))
-        (sound (let* (
-                      (filepathname (namestring (car (if (not (file-pathname type)) 
-                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
-                                                         (list (file-pathname type)))))))
-                                    (om::string+ "r" "'" filepathname "'")))
-        (fixnum (list (write-to-string type)))
-        (float (write-to-string type))
-        (cons (mapcar (lambda (x) (if (equal (length (om::list! x)) 1)
-                                      (caar (format2python-no-cons x))
-                                      (format2python x))) type))
-        (single-float (list (write-to-string type)))
-        (pathname  (list (namestring type)))))
-
-
-;==================================
-
-
-;==================================
-
-(defun format2python (type)
-    (case (type-of type)
-        (lispworks:simple-text-string (list type))
-        (sound (let* (
-                      (filepathname (namestring (car (if (not (file-pathname type)) 
-                                                         (list (ckn-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
-                                                         (list (file-pathname type)))))))
-                                    (om::string+ "r" "'" filepathname "'")))
-        (fixnum (list (write-to-string type)))
-        (float (write-to-string type))
-        (cons (lisp->list-py-run (flat (mapcar (lambda (x) (list (format2python x))) type))))
-        (single-float (write-to-string type))
-        (pathname   (list (namestring type)))))
 
 ;; ================= Some Functions =====================
 
@@ -368,7 +311,8 @@
 :doc "With this object you can see the index parameters of some VST2 plugin."
 
 
-(if om::*vscode-is-openned* (let () (print "You need to close VScode to update the code") (om::abort))) ;; MAKE A DIALOG
+(if om::*vscode-is-openned* 
+    (let () (om::om-message-dialog "You need to close VScode First to update the code!") (om::abort-eval))) ;; MAKE A DIALOG
 
 (let* (
       (python-code (code (py-append-code cabecario code)))
@@ -424,6 +368,17 @@
 :doc ""
 
 (py-concat-code (flat (om::x-append rest nil nil))))
+
+
+;; ========================
+
+(defmethod! py-remove-ext-modules (string string)
+:initvals '(nil)
+:indoc '("run py") 
+:icon 'py-f
+:doc ""
+
+(om-cmd-line (format nil "~d && pip uninstall -y ~d" om-py::*activate-virtual-enviroment*  string)))
 
 
 ;; ========================

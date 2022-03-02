@@ -42,29 +42,49 @@ def to_om_dict (L):
 
 def lispify(L):
     """Convert a Python object L to a lisp representation."""
-    if (isinstance(L, float)
-        or isinstance(L, int)
-        or isinstance(L, numpy.int64)
-    ):
-        return L.lisp
-    elif (isinstance(L, tuple) or isinstance(L, numpy.ndarray)):
-        s = [element.lisp for element in L]
-        return '(' + ' '.join(s) + ')'
-
-    elif (isinstance(L, list)):
-        lispify_list = [lispify(element) for element in L]
-        return '(' + ' '.join(lispify_list) + ')'
-    elif isinstance(L, dict):
-        return lispify(to_om_dict(L))
-    elif isinstance(L, str):
-        new_path = L.replace('\\', '/')
-        return new_path.lisp
-    elif isinstance(L, complex):
-        return '#C({0} {1})'.format(L.real, L.imag)
+    
+    if L is None:
+        return 'nil'
     else:
-        not_supported_type = type(L)
-        Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not a supported type to charlesneimog@outlook.com or https://github.com/charlesneimog/OM-py/issues/new')
-        return Warning
+        # LISTS ARE RECURSIVE
+        if (isinstance(L, tuple) or isinstance(L, numpy.ndarray)):
+            s = [element.lisp for element in L]
+            return '(' + ' '.join(s) + ')'
+
+        elif (isinstance(L, list)):
+            lispify_list = [lispify(element) for element in L]
+            return '(' + ' '.join(lispify_list) + ')'
+        elif isinstance(L, dict):
+            return lispify(to_om_dict(L))
+
+        # COMPLEX NUMBERS
+
+        elif isinstance(L, complex):
+            return '#C({0} {1})'.format(L.real, L.imag)
+
+        # ATOMS
+
+        elif (
+            isinstance(L, float)
+            or isinstance(L, int)
+            or isinstance(L, numpy.int64)
+            or isinstance(L, numpy.int32)
+            or isinstance(L, numpy.float64)
+            or isinstance(L, numpy.float32)
+        ):
+            return L.lisp
+
+        elif isinstance(L, str):
+            new_path = L.replace('\\', '/')
+            return new_path.lisp
+
+        elif isinstance(L, None):
+            return '()'
+        
+        else:
+            not_supported_type = type(L)
+            Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not a supported type to charlesneimog@outlook.com or https://github.com/charlesneimog/OM-py/issues/new')
+            return Warning
 
 # Supported Types: ============================================================
 
