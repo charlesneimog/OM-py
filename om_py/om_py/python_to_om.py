@@ -59,7 +59,7 @@ def to_om_dict (L):
 def lispify(L):
     """Convert a Python object L to a Common Lisp representation."""
     
-    if L is None or NoneType:
+    if L is None or L == []:
         return 'nil'
     else:
         # LISTS ARE RECURSIVE
