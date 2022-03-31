@@ -218,7 +218,11 @@
 
         (#\r (unless (edit-lock editor)
                (store-current-state-for-undo editor)
-               (mapc 'set-reactive-mode (or selected-boxes selected-connections))))
+
+               (let* ()
+                     (print selected-boxes)
+               
+               (mapc 'set-reactive-mode (or selected-boxes selected-connections)))))
 
         (#\i (unless (edit-lock editor)
                (store-current-state-for-undo editor)

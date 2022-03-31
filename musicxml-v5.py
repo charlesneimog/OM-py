@@ -1,6 +1,6 @@
 #(py_var (musicxml_file)
 
-musicxml_file = "C:\\Users\\charl\\OneDrive_usp.br\\Documents\\OpenMusic\\in-files\\untitled.musicxml"
+musicxml_file = "C:\\Users\\charl\\OneDrive_usp.br\\Documents\\OpenMusic\\in-files\\Piece.musicxml"
 # ======================= Add Variables Just above this Line ========================
 
 import music21 
@@ -17,7 +17,6 @@ def add_dots(music_value, musical_dots, inicial_value): # function to add dots t
         new_music_value = int(new_number) + music_value
         new_musical_dots = musical_dots - 1
         return add_dots(new_music_value, new_musical_dots, new_number)
-
 
 # =====================================================================================
 def names2ratio (names):
@@ -48,6 +47,25 @@ def names2ratio (names):
         return 1024
     else:
         return -1
+
+
+# =====================================================================================
+def fix_nested_tuplets(tuplet):
+    nested = True
+    normal_notes = None
+    actual_pulses = []
+    final_tree = []
+    for x in tuplet:
+        if type(x) == list:
+            normal_notes = x[0]
+            actual_pulses.append(x[1])
+            stop_nested = x[2]
+            if stop_nested == 'stop':
+                final_nested_tree = [normal_notes, actual_pulses]
+                final_tree.append(final_nested_tree)
+        else:
+            final_tree.append(x)
+    return final_tree
 
 # =====================================================================================
 
@@ -82,8 +100,10 @@ class ckn_notes:
 class om_group:
     total_duration = 0
     total_pulses = []
+    figure_first_level = None
     minum_value = None
     dots = 0
+    tuplets_level = 0
     active = False
 
 class om_note:
@@ -113,6 +133,7 @@ class om_part:
 
 PULSE_BY_MEASURE = []
 PULSE = []
+NESTED_PULSE = []
 PULSE_TO_KNOW_WHEN_FINISH = []
 PART = []
 
@@ -147,12 +168,19 @@ for part_index in xml_data.parts:
             TimeSignature = TimeSignature 
         PULSE = []
         PULSE_TO_KNOW_WHEN_FINISH = []
-    
         
+        measure_values = []
+        for notes_and_rests in measure.notesAndRests:
+            measure_values.append(names2ratio(notes_and_rests.duration.type))
+        minor_value = max(measure_values)
+        print('A measure with minor value: ', minor_value)
+
+
         
+                
         for notes_and_rests in measure.notesAndRests: ### Todos os valores ritmicos (eu acho)
             
-           
+            
             # ============================================================================
             # ============================================================================
             if isinstance(notes_and_rests, music21.note.Rest):
@@ -166,59 +194,96 @@ for part_index in xml_data.parts:
                 tie = None
             duration = notes_and_rests.duration
 
-
+            
+            #print(duration.type)
             
             # ============================================================================
             # ============================================================================
 
-            
-            
-            
-            if len(duration.tuplets) > 0: # Se tiver tuplets
+            if len(duration.tuplets) == 1: # Se tiver tuplets com uma camada
                 tuplets = duration.tuplets
                 ratio = duration.aggregateTupletMultiplier() 
                 how_many_dots_have_dots = duration.dots
                 valor_da_nota = duration.type
                 durationActual = tuplets[0].durationActual.type
+                print(tuplets[0].totalTupletLength(), 'aqui')
                 om_tree_valor = names2ratio(durationActual) / names2ratio(valor_da_nota) # durationActual
                 tuplets_duration = round((names2ratio(valor_da_nota) / ratio.numerator) * (TimeSignature[1] / 4))
                 tuplets_pulse = names2ratio(durationActual) / names2ratio(valor_da_nota)
                 start_tuplets_pulse = tuplets_pulse
                 tuplets_pulse_dot = add_dots(om_tree_valor, how_many_dots_have_dots, om_tree_valor)
-                
                 if tie == 'stop' or tie == 'continue':
-                    
                     tuplets_pulse_tie = float(tuplets_pulse_dot)
                     tuplets_pulse_dot_tie = float(tuplets_pulse_dot)
                 else:
                     tuplets_pulse_tie = round(tuplets_pulse_dot)
                     tuplets_pulse_dot_tie = round(tuplets_pulse_dot)
-
                 if isRest:
                     PULSE.append(-abs(tuplets_pulse_dot_tie))
                     PULSE_TO_KNOW_WHEN_FINISH.append(-abs(tuplets_pulse_dot_tie))
                 else:
                     PULSE.append(abs(tuplets_pulse_dot_tie))
                     PULSE_TO_KNOW_WHEN_FINISH.append(abs(tuplets_pulse_dot_tie))
-                #print(ratio.denominator, sum(map(lambda x: abs(x), PULSE_TO_KNOW_WHEN_FINISH)), PULSE_TO_KNOW_WHEN_FINISH)     
-                if ratio.denominator == sum(map(lambda x: abs(x), PULSE_TO_KNOW_WHEN_FINISH)): # Checar tamanho das tuplets Isso funciona pra tudo???.
-                    
+                
+                if duration.tuplets[0].type == 'stop':     
                     all_tuplets = om_group()
-                    all_tuplets.total_pulses = PULSE
+                    all_tuplets.total_pulses = PULSE 
                     all_tuplets.minum_value = names2ratio(durationActual)
+                    all_tuplets.figure_first_level = duration.tuplets[0].numberNotesNormal
+                    all_tuplets.tuplets_level = len(duration.tuplets)
                     all_tuplets.total_duration = tuplets_duration
                     PULSE_BY_MEASURE.append(all_tuplets) 
                     PULSE = []
                     PULSE_TO_KNOW_WHEN_FINISH = []
+            
+            ##################
+            ##################
+            elif len(duration.tuplets) == 2: # Segundo nível de tuplets
+                tuplets = duration.tuplets
+                ratio = duration.aggregateTupletMultiplier() 
+                how_many_dots_have_dots = duration.dots
+                valor_da_nota = duration.type
+                durationActual = tuplets[0].durationActual.type
+                valor_total_da_quialtera = tuplets[0].totalTupletLength()
+                om_tree_valor = names2ratio(durationActual) / names2ratio(valor_da_nota) # durationActual
+                tuplets_duration = round((names2ratio(valor_da_nota) / ratio.numerator) * (TimeSignature[1] / 4))
+                tuplets_pulse = names2ratio(durationActual) / names2ratio(valor_da_nota)
+                start_tuplets_pulse = tuplets_pulse
+                tuplets_pulse_dot = add_dots(om_tree_valor, how_many_dots_have_dots, om_tree_valor)
+                if tie == 'stop' or tie == 'continue':
+                    tuplets_pulse_tie = float(tuplets_pulse_dot)
+                    tuplets_pulse_dot_tie = float(tuplets_pulse_dot)
                 else:
-                    None
+                    tuplets_pulse_tie = round(tuplets_pulse_dot)
+                    tuplets_pulse_dot_tie = round(tuplets_pulse_dot)
+                if isRest:
+                    PULSE.append([duration.tuplets[1].numberNotesNormal, -abs(tuplets_pulse_dot_tie), duration.tuplets[1].type])
+                else:
+                    PULSE.append([duration.tuplets[1].numberNotesNormal, abs(tuplets_pulse_dot_tie), duration.tuplets[1].type])
+
+                #############################################
+                #############################################
+                if duration.tuplets[0].type == 'stop':     
+                    all_tuplets = om_group()
+                    all_tuplets.total_pulses = PULSE 
+                    all_tuplets.minum_value = names2ratio(durationActual)
+                    all_tuplets.figure_first_level = duration.tuplets[0].numberNotesNormal
+                    all_tuplets.tuplets_level = len(duration.tuplets)
+                    all_tuplets.total_duration = tuplets_duration
+                    
+                    PULSE_BY_MEASURE.append(all_tuplets) 
+                    PULSE = []
+                    PULSE_TO_KNOW_WHEN_FINISH = []
          
-            else: ## Se não é tuplets
-                                
+            
+            #############################################
+            #############################################
+            #############################################
+            #############################################
+            else: ## Se não é tuplets             
                 duration = notes_and_rests.duration
                 if isRest:
                     local_om_note = om_note()
-                    #print(duration.type)
                     if duration.type == 'complex':
                         ritmo_of_the_note = -1
                     else:
@@ -246,31 +311,20 @@ for part_index in xml_data.parts:
                     PULSE = []
                     PULSE_TO_KNOW_WHEN_FINISH = []
 
+        # Executado apos todas as notas do compasso
         new_measure = om_measure() ## Todas as notas do compasso ja foram extraídas
         new_measure.tree = []
         formated_tree = []
         new_measure.tree.append(TimeSignature)
-        
         for groups_and_notes in PULSE_BY_MEASURE:
-            minor_value = max(list(map(lambda x: x.minum_value, PULSE_BY_MEASURE)))
-            #print(groups_and_notes.total_duration)
-            #print((minor_value / groups_and_notes.total_duration) * (TimeSignature[1] / 4)) # Compassos com UT menores que 4 nao funcionam ainda
             if isinstance(groups_and_notes, om_group):
-                minor_value = max(list(map(lambda x: x.minum_value, PULSE_BY_MEASURE)))
-                
-                formated_tree.append([round((minor_value / groups_and_notes.total_duration) * (TimeSignature[1] / 4)), groups_and_notes.total_pulses])
-                
-            else: ## SOU NOTA OU ACORDE OU PAUSA
-                #print(list(map(lambda x: x.minum_value, PULSE_BY_MEASURE)))
-                minor_value = max(list(map(lambda x: x.minum_value, PULSE_BY_MEASURE)))
-                
+                formated_tree.append([(int(TimeSignature[1] / groups_and_notes.figure_first_level)) * int(TimeSignature[1]), fix_nested_tuplets(groups_and_notes.total_pulses)])
+            else: 
                 correct_value = minor_value / groups_and_notes.total_duration 
                 if groups_and_notes.rest:
                     correct_value = -abs(correct_value)
                 else:
                     correct_value = abs(correct_value)
-
-
                 if groups_and_notes.dots == 0:
                     add_dots_to_note = correct_value # Não era pra ser necessario fazer isso
                 else:
@@ -279,10 +333,11 @@ for part_index in xml_data.parts:
                     tie_or_not = float(add_dots_to_note)
                 else:
                     tie_or_not = round(add_dots_to_note)
+                if tie_or_not == 0: # I am not sure about this IF.
+                    tie_or_not = -1 
                 formated_tree.append(tie_or_not)        
         
         PULSE_BY_MEASURE = []  
-        
         new_measure.tree.append(formated_tree)  # salva o compasso formatado
         py2om_voice.tree.append(new_measure.tree)
                 
@@ -290,7 +345,7 @@ for part_index in xml_data.parts:
     py2om_voice.tree = [] # Não tava sendo formatado
     
    
-print(lispify(py2om_om_part.tree[0]))
+to_om(py2om_om_part.tree)
 
         
 

@@ -9,6 +9,22 @@ import ctypes as c
 import numpy as numpy
 import os
 
+
+
+# ============================================================================= 
+
+class pcolors:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    ORANGE = '\033[91m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 # =============================================================================
 
 class PyObject_HEAD(c.Structure):
@@ -41,9 +57,9 @@ def to_om_dict (L):
 # =============================================================================
 
 def lispify(L):
-    """Convert a Python object L to a lisp representation."""
+    """Convert a Python object L to a Common Lisp representation."""
     
-    if L is None:
+    if L is None or NoneType:
         return 'nil'
     else:
         # LISTS ARE RECURSIVE
@@ -83,7 +99,7 @@ def lispify(L):
         
         else:
             not_supported_type = type(L)
-            Warning = (f'ERROR: Type not supported, please report that {not_supported_type} is not a supported type to charlesneimog@outlook.com or https://github.com/charlesneimog/OM-py/issues/new')
+            Warning = (f'{pcolors.FAIL}ERROR: Type not supported, please report that {pcolors.BOLD}{not_supported_type}{pcolors.FAIL} is not a supported type to ]https://github.com/charlesneimog/OM-py/issues/new{pcolors.ENDC}')
             return Warning
 
 # Supported Types: ============================================================
