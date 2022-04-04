@@ -24,40 +24,39 @@
 
 ; ================================= VIRTUAL ENV =================================================================
                               
-#+windows (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.bat" (om::tmpfile ""))))) "nil")
-#+linux (defvar *activate-virtual-enviroment* (om::string+ "bash " (namestring (merge-pathnames "Python/bin/activate" (om::tmpfile "")))) "nil")
-;#+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "Python/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+#+windows (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "OM-py-env/Scripts/activate.bat" (om::tmpfile ""))))) "nil")
+#+linux (defvar *activate-virtual-enviroment* (om::string+ "bash " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))) "nil")
+;#+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "OM-py-env/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
 
 ; =================================
 ;; Pip install venv if first load
-  
-      (if *first-time-load*
-            (let* ()
-                  (om::save-as-text '(((defvar *first-time-load* nil))) (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py"))))
-                  (print "Installing venv!")
-                  (oa::om-command-line 
-                                    #+macosx "pip3 install virtualenv"
-                                    #+windows "pip install virtualenv"
-                                    ;#+linux "sudo apt install python3.8-venv -S"
+(if *first-time-load*
+      (let* ()
+            ; "Check if it is the first time of the load!"
+
+            (om::save-as-text '(((defvar *first-time-load* nil))) (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py"))))
+            (print "Installing venv!")
+            (oa::om-command-line 
+                        #+macosx "pip3 install virtualenv"
+                        #+windows "pip install virtualenv"
+                        ;#+linux "sudo apt install python3.8-venv -S"
                                                                   t)
                   ;; Pip create env 
-                  (oa::om-command-line 
-                    #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile ""))))))
-                    ;#+linux (om::string+ "python3.8 -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile ""))))))    
+            (oa::om-command-line 
+                  #+macosx  (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
+                  #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
+                  ;#+linux (om::string+ "python3.8 -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile ""))))))    
                                              
                                               t)
                                     
 ;; pip always use venv
 
-                  (mp:process-run-function (om::string+ "Install om_py")
-                              () 
-                              (lambda () (oa::om-command-line 
-                                                            #+macosx (om::string+ *activate-virtual-enviroment* " && pip3 install om_py") 
-                                                            #+windows (om::string+ *activate-virtual-enviroment* " && pip install om_py")
-                                                            #+linux (om::string+ *activate-virtual-enviroment* " && pip3 install om_py")
-                                                                  t)))))
+            (oa::om-command-line 
+                  #+macosx (om::string+ *activate-virtual-enviroment* " && pip3 install om_py") 
+                  #+windows (om::string+ *activate-virtual-enviroment* " && pip install om_py")
+                  #+linux (om::string+ *activate-virtual-enviroment* " && pip3 install om_py")
+                              t)))
         
-
 
 ;===================================
 (defun save-temp-sounds (sounds &optional if-needed) 

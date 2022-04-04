@@ -1,0 +1,16 @@
+COPYING.rst
+LICENSE
+README.rst
+setup.py
+om_py/__init__.py
+om_py/audio_manipulation.py
+om_py/functions.py
+om_py/musicxml2om.py
+om_py/python_to_om.py
+om_py/random.py
+om_py/score.py
+om_py.egg-info/PKG-INFO
+om_py.egg-info/SOURCES.txt
+om_py.egg-info/dependency_links.txt
+om_py.egg-info/requires.txt
+om_py.egg-info/top_level.txt

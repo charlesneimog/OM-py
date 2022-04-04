@@ -16,7 +16,7 @@
        (add-lisp-var (om::string+ "#(" (write-to-string (first vs-code)) " " (write-to-string (second vs-code))))
        (python-var (mapcar (lambda (y) `(om::string+ ,y)) (mapcar (lambda (x) (string+ (write-to-string x) " " "= ")) var)))
        (input-values (mapcar (lambda (x) (omng-box-value x)) (inputs (car (om::list! selected-boxes))))) ;; get input values
-       (separation (om::string+ "# ======================= Add Variables Just above this Line ========================" (string #\Newline)))
+       (separation (om::string+ "# ======================= Add OM Variables ABOVE this Line ========================" (string #\Newline)))
        (format2python (mapcar (lambda (x) (om-py::format2python-v3 x)) input-values))
        (lisp-var2py-var (mapcar (lambda (x y) `(,@x ,y (string #\Newline))) python-var (om::list! format2python)))
        (lisp-2-python-var (eval `(om-py::concatstring (om::x-append ,@lisp-var2py-var nil nil))))
@@ -32,7 +32,7 @@
     
 ;; ;; ==========================================================================
 
-(defun vs-code-update-py-box (path selected-boxes variables) ;; Precisa ser um método????
+(defun vs-code-update-py-box (path selected-boxes variables)
 
 (let* (
        
