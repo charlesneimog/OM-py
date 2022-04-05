@@ -48,7 +48,7 @@
                                         (all-var-names (om::string-to-list var-fix " "))
                                         (remake-init-of-var-definition (mapcar (lambda (x) (om::string+ x " " "=" " ")) all-var-names))
                                         (remove-py-var (om-py::remove-py-var remove-var-in-py remake-init-of-var-definition))
-                                        (remove-notice (om-py::remove-py-var remove-py-var '("# ======================= Add Variables Just above this Line ========================")))
+                                        (remove-notice (om-py::remove-py-var remove-py-var '("# ======================= Add OM Variables ABOVE this Line ========================")))
                                         (remove-linha-a-mais (if (equal (car remove-py-var) "") (cdr remove-notice) remove-notice)))
                                         (if (equal (car (last remove-linha-a-mais)) "") (om::first-n remove-linha-a-mais (- (length remove-linha-a-mais) 1)) remove-linha-a-mais)))     
        (read-edited-code 
