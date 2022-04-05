@@ -18,6 +18,7 @@ setup(
     version=VERSION,
     author="Charles K. Neimog",
     author_email="<charlesneimog@outlook.com>",
+    url = 'https://github.com/charlesneimog/OM-py',
     description=DESCRIPTION,
     long_description = ( read('README.rst') + '\n\n' + read('COPYING.rst') ),
     long_description_content_type="text/markdown",
