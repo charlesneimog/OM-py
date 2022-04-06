@@ -1,6 +1,6 @@
 #(py_var (musicxml_file)
 
-musicxml_file = "C:\\Users\\charl\\OneDrive_usp.br\\Documents\\OpenMusic\\in-files\\Piece.musicxml"
+musicxml_file =  "C:/Users/charl/OneDrive_usp.br/Documents/OpenMusic/in-files/a.musicxml"
 # ======================= Add Variables Just above this Line ========================
 
 import music21 
@@ -275,14 +275,15 @@ for part_index in xml_data.parts:
                     PULSE = []
                     PULSE_TO_KNOW_WHEN_FINISH = []
          
-            
             #############################################
             #############################################
             #############################################
             #############################################
+
             else: ## Se não é tuplets             
                 duration = notes_and_rests.duration
                 if isRest:
+                    #print('sou Rest!')
                     local_om_note = om_note()
                     if duration.type == 'complex':
                         ritmo_of_the_note = -1
@@ -316,8 +317,11 @@ for part_index in xml_data.parts:
         new_measure.tree = []
         formated_tree = []
         new_measure.tree.append(TimeSignature)
+
         for groups_and_notes in PULSE_BY_MEASURE:
+            
             if isinstance(groups_and_notes, om_group):
+                #print(groups_and_notes.figure_first_level)
                 formated_tree.append([(int(TimeSignature[1] / groups_and_notes.figure_first_level)) * int(TimeSignature[1]), fix_nested_tuplets(groups_and_notes.total_pulses)])
             else: 
                 correct_value = minor_value / groups_and_notes.total_duration 
@@ -345,7 +349,7 @@ for part_index in xml_data.parts:
     py2om_voice.tree = [] # Não tava sendo formatado
     
    
-to_om(py2om_om_part.tree)
+print(lispify(py2om_om_part.tree))
 
         
 
