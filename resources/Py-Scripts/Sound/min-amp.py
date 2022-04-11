@@ -24,7 +24,7 @@ def fancy_amplitude_envelope(signal, frame_size, hop_length):
     """Fancier Python code to calculate the amplitude envelope of a signal with a given frame size."""
     return np.array([max(signal[i:i+frame_size]) for i in range(0, len(signal), hop_length)])
 
-def max_amplitude_envelope (audio_file):
+def min_amplitude_envelope (audio_file):
     """Calculate the amplitude envelope of a signal with a given frame size nad hop length."""
     FRAME_SIZE = 256
     HOP_LENGTH = 128
@@ -35,14 +35,14 @@ def max_amplitude_envelope (audio_file):
     ae_audio = amplitude_envelope(audio, FRAME_SIZE, HOP_LENGTH)
     frames = range(len(ae_audio))
     t = librosa.frames_to_time(frames, hop_length=HOP_LENGTH)
-    ae_audio = max(ae_audio)
+    ae_audio = min(ae_audio)
     return ae_audio
     
 amplitudes = []
 
 for audio_file in audio_files:
-    amp_max = max_amplitude_envelope(audio_file)
-    amplitudes.append(amp_max)
+    amp_min = min_amplitude_envelope(audio_file)
+    amplitudes.append(amp_min)
 
 to_om(amplitudes)
 
