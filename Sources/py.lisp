@@ -78,31 +78,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 
 ;; ======
 
-#|
-(defmethod compile-patch ((self OMPYFunction))
-  "Compilation of a py function"
-    (setf (error-flag self) nil)
-    (let* (
-      (lambda-expression (read-from-string (reduce #'(lambda (s1 s2) (concatenate 'string s1 (string #\Newline) s2)) (text self)) nil))
-      (function-def
-            (if (and (python-expression-p lambda-expression) lambda-expression)
-                  (progn (setf (compiled? self) t)
-                        (let* (
-                              (var (car (cdr lambda-expression)))
-                              (code (flat (x-append (list (second (cdr lambda-expression))) (list var)) 1))
-                              (py-code (list `(make-value (quote om-py::python) (list (list :code (format nil ,@code)))))))
-                              `(defun ,(intern (string (compiled-fun-name self)) :om) 
-                                              ,var ;;variaveis da funcao
-                                              ,@py-code ;;codigo da funcao
-                                              )))                                             
-                          (progn (om-beep-msg "ERROR IN LISP FORMAT!!")
-                              (setf (error-flag self) t)
-                              `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
-    (compile (eval function-def))))
-
-
-|#
-
 (defmethod compile-patch ((self OMPYFunction))
   "Compilation of a py function"
     (setf (error-flag self) nil)
@@ -126,10 +101,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
                         (setf (error-flag self) t)
                        `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
 (compile (eval function-def))))
-
-
-
-
 
 ;;;===================
 ;;; py FUNCTION BOX
@@ -238,7 +209,7 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
   (format nil "~A  [internal py function]" (name self)))
 
 (defmethod om-lisp::type-filter-for-text-editor ((self py-function-editor-window))
-  '("py function" "*.olsp"))
+  '("py function" "*.py"))
 
 ;;; this will disable the default save/persistent behaviours of the text editor
 ;;; these will be handled following the model of OMPatch
@@ -325,12 +296,12 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
   #'(lambda () (om-lisp::change-text-edit-font (window self))))
 
 
-;; ===============================================================
-;; ===============================================================
+
+
 ;; ===============================================================
 ;; ================ Python Code Editor Inside OM =================
-;; ===============================================================
-;; ===============================================================
+;; ================ Python Code Editor Inside OM =================
+;; ================ Python Code Editor Inside OM =================
 ;; ===============================================================
 
 (defclass run-py-f (OMProgrammingObject)
@@ -371,14 +342,66 @@ to_om(list_of_numbers)
 
 ;; ======
 
-(defmethod omNG-make-special-box ((reference (eql 'py)) pos &optional init-args)
-  (omNG-make-new-boxcall
-   (make-instance 'run-py-f-internal
-                  :name (if init-args (format nil "~A" (car (list! init-args))) "   py-run    ")
-                  :text *default-py-run-function-text*)
-   pos init-args))
 
-;; ======
+;; ==================================== READ PYTHON SCRIPT
+(defun read-python-script (path)
+
+    (let* (
+        (get-var-in-py (car (om-py::get-lisp-variables path)))
+        (remove-all-non-lisp-text  (let* (
+                                          (remove-var-in-py (om-py::remove-lisp-var path))
+                                          (string get-var-in-py)
+                                          (var (om-py::concatstring (om::last-n (om-py::char-by-char string) (- (length (om-py::char-by-char string)) 8))))
+                                          (var-fix (remove ")" var :test (lambda (a b) (eql (aref a 0) b))))
+                                          (var-fix (remove "(" var-fix :test (lambda (a b) (eql (aref a 0) b))))
+                                          (all-var-names (om::string-to-list var-fix " "))
+                                          (remake-init-of-var-definition (mapcar (lambda (x) (om::string+ x " " "=" " ")) all-var-names))
+                                          (remove-py-var (om-py::remove-py-var remove-var-in-py remake-init-of-var-definition))
+                                          (remove-notice (om-py::remove-py-var remove-py-var '("# ======================= Add OM Variables ABOVE this Line ========================")))
+                                          (remove-linha-a-mais (if (equal (car remove-py-var) "") (cdr remove-notice) remove-notice)))
+                                          (if (equal (car (last remove-linha-a-mais)) "") (om::first-n remove-linha-a-mais (- (length remove-linha-a-mais) 1)) remove-linha-a-mais)))     
+        
+        (read-edited-code 
+                (om-py::py-list->string (list 
+                                            (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
+        (variables-in-lisp   (if    (null get-var-in-py)
+                                    (x-append (om::string+ "(py_var " (write-to-string variables)) read-edited-code ")")
+                                    (x-append get-var-in-py read-edited-code ")"))))
+        
+        variables-in-lisp))
+        
+;; ==============================================================================
+
+(defmethod omNG-make-special-box ((reference (eql 'py)) pos &optional init-args)
+  
+  ;; ======================
+
+  (let* (
+        (py-script-name (if (null (car (list! init-args))) " new-py-script " (write-to-string  (car (list! init-args)))))
+
+        (adapt-window (if (> (length py-script-name) 14)
+                          py-script-name
+                          (let* (
+                                (length-of-name (round (/ (- 14 (length py-script-name)) 2)))
+                                (length-of-name (if (oddp length-of-name) (+ length-of-name 1) length-of-name))
+                                (backspace (reduce (lambda (x y) (concatenate 'string x y)) (om::repeat-n " " length-of-name))))
+                                (om::string+ backspace py-script-name backspace))))
+        
+        ;(verbose (om::om-print adapt-window "name of script: "))
+        (script-text (let* (
+                          (script-pathname (merge-pathnames (om::string+ py-script-name ".py") (get-pref-value :externals :py-scripts)))
+                          (file-exits? (probe-file script-pathname)))
+                          (if file-exits?
+                                          (read-python-script script-pathname)
+                                          *default-py-run-function-text*))))
+        
+(omNG-make-new-boxcall
+      (make-instance 
+              'run-py-f-internal :name adapt-window :text script-text) pos (om::list! adapt-window))))
+
+;; ======================================================
+;; ======================================================
+
 
 (defmethod decapsulable ((self run-py-f)) nil)
 

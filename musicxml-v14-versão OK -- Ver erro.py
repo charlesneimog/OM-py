@@ -1,5 +1,13 @@
 #(py_var (musicxml_file)
 
+
+
+# O erro acontece quando estamos utilizando compasso complexos como:
+# ((5 8) (3 3 (8 (1 1 1)))
+#
+#
+
+
 musicxml_file = "C:\\Users\\Neimog\\OneDrive_usp.br\\Documents\\Composition\\Ideias Roubadas III\\Ideias Roubadas III.musicxml"
 # ======================= Add OM Variables ABOVE this Line ========================
 
@@ -62,7 +70,7 @@ class om_pulse():
         self.actual_notes = 3
         self.min_value = None
         self.min_note_value_ALL_measure = None
-        self.min_value_out_tuplets = None
+        self.min_value_OUT_tuplets = None
         self.min_level_of_tuplets = 0
         self.max_level_of_tuplets = 0
         self.dots = 0
@@ -233,11 +241,10 @@ def tuplet_level2list(tuplet, level):
 
 # =====================================================================================
 def mk_tuplets(tuplets):
-    
-    print(tuplets[1])
-    
+        
     final_tree = []
     anterior_tuplet_level = tuplets[0][1].tuplet_level
+    last_tuplet_pulse = tuplets[-1][1]
     index = 0
     
     tuplet_level_1_pulses = []
@@ -276,55 +283,34 @@ def mk_tuplets(tuplets):
 
         music21_tuplet_class = tuplet_class.music21_tuplet_class
         
-        if len(music21_tuplet_class) == 1:
+        if len(music21_tuplet_class) > 0:
             valor_da_quialtera_level_1 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[0].tupletNormal[0]
-            index_tuplet_1 += 1
-            print(index_tuplet_1)
-
-        elif len(music21_tuplet_class) == 2:
-            valor_da_quialtera_level_2 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[1].tupletNormal[0]
             
-        elif len(music21_tuplet_class) == 3:
-            valor_da_quialtera_level_3 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[2].tupletNormal[0] 
-        
-        ## PULSOS DE CADA TREE
-
-        if len(tuplet_class.music21_tuplet_class) == 1:
-            tuplet_level_1_pulses.append(pulse)
-        elif len(tuplet_class.music21_tuplet_class) == 2:
+        if len(music21_tuplet_class) > 1:
+            valor_da_quialtera_level_2 = int(tuplet_class.min_value_OUT_tuplets  / tuplet_class.division_note) * music21_tuplet_class[1].tupletNormal[0]
+            
+        if len(tuplet_class.music21_tuplet_class) == 2:
             tuplet_level_2_pulses.append(pulse)
-
-        elif len(tuplet_class.music21_tuplet_class) == 3:
-            tuplet_level_3_pulses.append(pulse)
-
-        else:
-            print("Ainda nao foi implementada a tuplet level maior que 3. Me pague um café que eu escrevo para você!")
+            if music21_tuplet_class[1].type == 'stop' and len(tuplet_class.music21_tuplet_class) == 2:
+                tuplet_level_2 = [tuplet_level_2_pulses]
+                tuplet_level_2.insert(0, valor_da_quialtera_level_2)
+                final_tree.append(tuplet_level_2)
+                tuplet_level_2_pulses = []
         
-    
-        ## So vou suportar até quatro níveis agora.
+        if len(tuplet_class.music21_tuplet_class) == 1:
+            final_tree.append(pulse)
+            
+        if tuplet[1] == last_tuplet_pulse:
+            final_tree = [final_tree]
+            final_tree.insert(0, valor_da_quialtera_level_1)
+            final_tree = [final_tree]
         
-    #print('VALOR DA QUIALTERA2 :', valor_da_quialtera_level_2)
-    if tuplet_level_3_pulses != []:
-        
-        final_tree.append([tuplet_level_3_pulses])
-        final_tree.insert(0, valor_da_quialtera_level_3)
-
-    if tuplet_level_2_pulses != []:
-        
-        tuplet_level_2 = [tuplet_level_2_pulses]
-        tuplet_level_2.insert(0, valor_da_quialtera_level_2)
-
-    #print(tuplet_level_1_pulses)
-    if tuplet_level_1_pulses != []:
-        
-        for z in tuplet_level_1_pulses: final_tree.append(z)
-        if tuplet_level_2_pulses != []:
-            final_tree.insert(index_tuplet_1 - 1, tuplet_level_2)
-        final_tree = [final_tree]
-        final_tree.insert(0, valor_da_quialtera_level_1)
-        final_tree = [final_tree]
-
-    ############# FORA DO COMPASSO EU MUDO A TREE 
+        if len(tuplet_class.music21_tuplet_class) > 2:
+            print("It hasn't been implemented nested tuplet with a level higher than 2. Buy me a coffee, and I'll write to you! :)")
+            import sys
+            sys.exit()
+            
+    ############# FORA DO COMPASSO EU MUDO A TREE #############
     
     return final_tree
 
@@ -382,18 +368,22 @@ xml_data = music21.converter.parse(musicxml_file)
 py2om_om_part = om_part()
 py2om_voice = om_voice()
 
-for part_index in xml_data.parts:
+tuplet_anterior = None
+ 
+for part in xml_data.parts:
     ## Loop for Parts
     microton_of_note_values = OM_Notes() 
     numero_do_compasso = 0
-    instrument = part_index.getInstrument().instrumentName
-    all_measures = part_index.getElementsByClass(music21.stream.Measure)
-
+    instrument = part.getInstrument().instrumentName
+    all_measures = part.getElementsByClass(music21.stream.Measure)
     
     for measure in all_measures:
         
         ## Loop for Measures
         numero_do_compasso = measure.number
+
+        print(f'=========================== {instrument} | Compasso {numero_do_compasso} ======================')
+        
         try:
             TimeSignature = list(map(lambda x: int(x), measure.timeSignature.ratioString.split('/')))  
         except:
@@ -417,9 +407,7 @@ for part_index in xml_data.parts:
             
             try:
                 tuplet_place = notes_and_rests.duration.tuplets[0].type
-                if tuplet_place == 'start' or tuplet_place == None:
-                    None
-                elif tuplet_place == 'stop':
+                if tuplet_place == 'stop':
                     Note_value = names2ratio(notes_and_rests.duration.tuplets[0].tupletNormal[1].type)
                     valor_minimo_fora_das_quialteras.append(Note_value)
 
@@ -440,6 +428,7 @@ for part_index in xml_data.parts:
         
         minor_note_value_of_measure = abs(max(measure_values))
         min_value_out_of_tuplets = abs(max(valor_minimo_fora_das_quialteras))
+        #print(min_value_out_of_tuplets, minor_note_value_of_measure )
         max_level_of_tuplets = max(all_level_of_tuplets)
         min_level_of_tuplets = min(all_level_of_tuplets)
         valor_minimo_fora_das_quialteras = min(valor_minimo_fora_das_quialteras)
@@ -469,20 +458,11 @@ for part_index in xml_data.parts:
                 ### Make OM_Pulse of Tuplet ###
                 ### Make OM_Pulse of Tuplet ###
 
-                # if len(duration.tuplets) == 2:
-                #     #print(dir(duration.tuplets[0].))
-                #     print(duration.tuplets[0].tupletNormal[0])
-                #     print(duration.tuplets[1].tupletNormal[0])
-                #     import sys
-                #     sys.exit()
-
-
-
                 level_of_tuplets = len(duration.tuplets)
                 tuplets = duration.tuplets
                 ratio = duration.aggregateTupletMultiplier() 
                 dots = duration.dots
-
+                print(tuplets[0].type)
                 ## =====================================================
 
                 tuplet_level_1_value = tuplets[0].tupletNormal[1].type
@@ -496,6 +476,7 @@ for part_index in xml_data.parts:
                 TUPLET_PULSE.actual_notes = ratio.denominator
                 TUPLET_PULSE.total_duration = ratio.denominator * valor_da_nota
                 TUPLET_PULSE.min_note_value_ALL_measure = minor_note_value_of_measure
+                TUPLET_PULSE.min_value_OUT_tuplets = min_value_out_of_tuplets
                 TUPLET_PULSE.min_level_of_tuplets = min_level_of_tuplets
                 TUPLET_PULSE.max_level_of_tuplets = max_level_of_tuplets
                 TUPLET_PULSE.dots = duration.dots
@@ -523,20 +504,18 @@ for part_index in xml_data.parts:
                     else:
                         TUPLET_PULSE.tie = False
                 
-                
                 TUPLET_PULSE.rest = isRest
-                
-                
+    
                 PULSE.append([duration.tuplets[level_of_tuplets - 1].numberNotesNormal, TUPLET_PULSE, duration.tuplets[level_of_tuplets - 1].type])
                 
                 ### FIM  ------ Make OM_Pulse of Tuplet ###
                 ### FIM  ------ Make OM_Pulse of Tuplet ###
                 ### FIM  ------ Make OM_Pulse of Tuplet ###
                     
+                ### Quando a tuplet superior para adiciona tudo ao OM_GROUP. ###
+                ### Quando a tuplet superior para adiciona tudo ao OM_GROUP. ###
+                ### Quando a tuplet superior para adiciona tudo ao OM_GROUP. ###
                 
-                ### Quando a tuplet superior para adiciona tudo ao OM_GROUP. ###
-                ### Quando a tuplet superior para adiciona tudo ao OM_GROUP. ###
-                ### Quando a tuplet superior para adiciona tudo ao OM_GROUP. ###
 
                 if duration.tuplets[0].type == 'stop':  
                     all_tuplets = om_group()
@@ -563,6 +542,7 @@ for part_index in xml_data.parts:
                         ritmo_of_the_note = -1
                     else:
                         ritmo_of_the_note = names2ratio(duration.type)
+                    
                     have_dots = duration.dots
                     TUPLET_PULSE.dots = have_dots  
                     TUPLET_PULSE.numero_do_compasso = numero_do_compasso
@@ -603,6 +583,7 @@ for part_index in xml_data.parts:
                     PULSE_TO_KNOW_WHEN_FINISH = []
 
         # Executado apos todas as notas do compasso
+
         new_measure = om_measure() ## Todas as notas do compasso ja foram extraídas
         new_measure.tree = []
         formated_tree = []

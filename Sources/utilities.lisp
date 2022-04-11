@@ -310,7 +310,7 @@
 :doc "With this object you can see the index parameters of some VST2 plugin."
 
 
-(if om::*vscode-is-openned* 
+(if om::*vscode-is-open?* 
     (let () (om::om-message-dialog "You need to close VScode First to update the code!") (om::abort-eval))) ;; MAKE A DIALOG
 
 (let* (

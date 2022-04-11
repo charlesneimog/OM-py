@@ -276,21 +276,12 @@ def mk_tuplets(tuplets):
 
         music21_tuplet_class = tuplet_class.music21_tuplet_class
         
-        if len(music21_tuplet_class) == 1:
-            valor_da_quialtera_level_1 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[0].tupletNormal[0]
-            index_tuplet_1 += 1
-            print(index_tuplet_1)
 
-        elif len(music21_tuplet_class) == 2:
-            valor_da_quialtera_level_2 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[1].tupletNormal[0]
-            
-        elif len(music21_tuplet_class) == 3:
-            valor_da_quialtera_level_3 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[2].tupletNormal[0] 
-        
         ## PULSOS DE CADA TREE
 
         if len(tuplet_class.music21_tuplet_class) == 1:
             tuplet_level_1_pulses.append(pulse)
+        
         elif len(tuplet_class.music21_tuplet_class) == 2:
             tuplet_level_2_pulses.append(pulse)
 
@@ -300,7 +291,27 @@ def mk_tuplets(tuplets):
         else:
             print("Ainda nao foi implementada a tuplet level maior que 3. Me pague um café que eu escrevo para você!")
         
-    
+
+        ## =========================================
+        ## =========================================
+
+        if len(music21_tuplet_class) == 1:
+            valor_da_quialtera_level_1 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[0].tupletNormal[0]
+            if tuplet_inside_level_1:
+                index_tuplet_1 += 1
+            
+
+        elif len(music21_tuplet_class) == 2:
+            valor_da_quialtera_level_2 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[1].tupletNormal[0]
+            if tuplet_moment == 'stop':
+                tuplet_level_2 = [tuplet_level_2_pulses]
+                tuplet_level_2.insert(0, valor_da_quialtera_level_2)
+
+        elif len(music21_tuplet_class) == 3:
+            valor_da_quialtera_level_3 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[2].tupletNormal[0] 
+        
+        
+        
         ## So vou suportar até quatro níveis agora.
         
     #print('VALOR DA QUIALTERA2 :', valor_da_quialtera_level_2)
@@ -319,12 +330,12 @@ def mk_tuplets(tuplets):
         
         for z in tuplet_level_1_pulses: final_tree.append(z)
         if tuplet_level_2_pulses != []:
-            final_tree.insert(index_tuplet_1 - 1, tuplet_level_2)
+            final_tree.insert(index_tuplet_1, tuplet_level_2)
         final_tree = [final_tree]
         final_tree.insert(0, valor_da_quialtera_level_1)
         final_tree = [final_tree]
 
-    ############# FORA DO COMPASSO EU MUDO A TREE 
+    ############# FORA DO COMPASSO EU MUDO A TREE #############
     
     return final_tree
 

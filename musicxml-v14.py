@@ -276,55 +276,41 @@ def mk_tuplets(tuplets):
 
         music21_tuplet_class = tuplet_class.music21_tuplet_class
         
-        if len(music21_tuplet_class) == 1:
+        
+        if len(music21_tuplet_class) > 0:
             valor_da_quialtera_level_1 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[0].tupletNormal[0]
-            index_tuplet_1 += 1
-            print(index_tuplet_1)
-
-        elif len(music21_tuplet_class) == 2:
+            
+        if len(music21_tuplet_class) > 1:
             valor_da_quialtera_level_2 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[1].tupletNormal[0]
             
-        elif len(music21_tuplet_class) == 3:
+        if len(music21_tuplet_class) > 2:
             valor_da_quialtera_level_3 = int(tuplet_class.min_note_value_ALL_measure  / tuplet_class.division_note) * music21_tuplet_class[2].tupletNormal[0] 
         
         ## PULSOS DE CADA TREE
 
-        if len(tuplet_class.music21_tuplet_class) == 1:
-            tuplet_level_1_pulses.append(pulse)
-        elif len(tuplet_class.music21_tuplet_class) == 2:
-            tuplet_level_2_pulses.append(pulse)
-
-        elif len(tuplet_class.music21_tuplet_class) == 3:
+        if len(tuplet_class.music21_tuplet_class) == 3:
             tuplet_level_3_pulses.append(pulse)
-
-        else:
+        
+        if len(tuplet_class.music21_tuplet_class) == 2:
+            tuplet_level_2_pulses.append(pulse)
+            if tuplet_moment == 'stop':
+                tuplet_level_2 = [tuplet_level_2_pulses]
+                tuplet_level_2.insert(0, valor_da_quialtera_level_2)
+                final_tree.append(tuplet_level_2)
+        
+        
+        if len(tuplet_class.music21_tuplet_class) == 1:
+            final_tree.append(pulse)
+            
+        if music21_tuplet_class[0].type == 'stop':
+            final_tree = [final_tree]
+            final_tree.insert(0, valor_da_quialtera_level_1)
+            final_tree = [final_tree]
+        
+        if len(tuplet_class.music21_tuplet_class) > 3:
             print("Ainda nao foi implementada a tuplet level maior que 3. Me pague um café que eu escrevo para você!")
         
-    
-        ## So vou suportar até quatro níveis agora.
-        
-    #print('VALOR DA QUIALTERA2 :', valor_da_quialtera_level_2)
-    if tuplet_level_3_pulses != []:
-        
-        final_tree.append([tuplet_level_3_pulses])
-        final_tree.insert(0, valor_da_quialtera_level_3)
-
-    if tuplet_level_2_pulses != []:
-        
-        tuplet_level_2 = [tuplet_level_2_pulses]
-        tuplet_level_2.insert(0, valor_da_quialtera_level_2)
-
-    #print(tuplet_level_1_pulses)
-    if tuplet_level_1_pulses != []:
-        
-        for z in tuplet_level_1_pulses: final_tree.append(z)
-        if tuplet_level_2_pulses != []:
-            final_tree.insert(index_tuplet_1 - 1, tuplet_level_2)
-        final_tree = [final_tree]
-        final_tree.insert(0, valor_da_quialtera_level_1)
-        final_tree = [final_tree]
-
-    ############# FORA DO COMPASSO EU MUDO A TREE 
+    ############# FORA DO COMPASSO EU MUDO A TREE #############
     
     return final_tree
 
@@ -388,12 +374,14 @@ for part_index in xml_data.parts:
     numero_do_compasso = 0
     instrument = part_index.getInstrument().instrumentName
     all_measures = part_index.getElementsByClass(music21.stream.Measure)
-
+    
     
     for measure in all_measures:
         
         ## Loop for Measures
         numero_do_compasso = measure.number
+
+        print(f'=========================== {instrument} | Compasso {numero_do_compasso} ======================')
         try:
             TimeSignature = list(map(lambda x: int(x), measure.timeSignature.ratioString.split('/')))  
         except:
