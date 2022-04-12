@@ -198,7 +198,9 @@
          (selected-connections (get-selected-connections editor))
          (player-active (and (boundp '*general-player*) *general-player*)))
 
-    (when panel
+(print key)   
+
+(when panel
 
       (case key
 
@@ -281,30 +283,11 @@
                (store-current-state-for-undo editor)
                (mapc 'switch-lock-mode selected-boxes)))
 
-        
-        ; ======================================== 
-        ; ========================================
-        ; ========================================
-
-       (#\z (unless (edit-lock editor)
-               (make-new-py-box panel)))
-        
-        
-       (#\c (if (and selected-boxes (or (equal (type-of (car (om::list! selected-boxes))) 'omboxpy) 
-                                           (equal (type-of (car (om::list! selected-boxes))) 'OMBox-run-py)))
-                                   
-                                   
-                                   (let* ()
-                                          (om::om-print "Opening VScode!" "OM-Py")
-                                          (defparameter *vscode-opened* t)
-                                          (open-vscode selected-boxes))
-
-
-                                   (unless (edit-lock editor)
-                                           (store-current-state-for-undo editor)
-                                           (if selected-boxes
-                                           (auto-connect-box selected-boxes editor panel)
-                                           (make-new-comment panel)))))
+       (#\c (unless (edit-lock editor)
+                     (store-current-state-for-undo editor)
+                     (if selected-boxes
+                            (auto-connect-box selected-boxes editor panel)
+                            (make-new-comment panel))))
 
        ;; ================================================================
 
@@ -387,15 +370,36 @@
         (#\d (when selected-boxes
                (mapcar #'print-help-for-box selected-boxes)))
 
-        (otherwise nil))
-      )))
+        
+        ; ======================================== 
+        ; ========== OM-PY =======================
+        ; ========================================
 
+       (#\z (if (and selected-boxes (or (equal (type-of (car (om::list! selected-boxes))) 'omboxpy) 
+                                           (equal (type-of (car (om::list! selected-boxes))) 'OMBox-run-py)))
+
+              ; if omboxpy or OMBox-run-py is selected, then open the VS-code
+              
+              (let* ()
+                     (om::om-print "Opening VScode!" "OM-Py")
+                     (defparameter *vscode-opened* t)
+                     (open-vscode selected-boxes))
+
+              ; if nothing is selected, then new py-script
+
+              (unless (edit-lock editor)
+                     (make-new-py-box panel))))
+        
+       ; ======================================== 
+       ; ========== OM-PY =======================
+       ; ======================================== 
+        
+       (otherwise nil)))))
 
 ;; ====================================================================================================
 
 (if (> 1.6 (read-from-string *version-string*))
        (let* ()
-
               (om-beep-msg "OM-Sharp is out of date. Please update to the latest version.")))
 
 ; ====================================================================================================
@@ -404,15 +408,11 @@
   (let* ()
           (add-preference-section :externals "OM-py" nil '(:py-enviroment :py-scripts))
           (add-preference :externals :py-enviroment "Python Enviroment" :path nil)
-          (add-preference :externals :py-scripts "Python Scripts" :folder (merge-pathnames "Py-Scripts/" (lib-resources-folder (find-library "OM-py"))))
-          
-          
-))
-
+          (add-preference :externals :py-scripts "Python Scripts" :folder (merge-pathnames "Py-Scripts/" (lib-resources-folder (find-library "OM-py"))))))
 
 (if (or (null (get-pref-value :externals :py-enviroment)) (equal (get-pref-value :externals :py-enviroment) ""))
        nil
        #+windows (setq om-py::*activate-virtual-enviroment* (om-py::py-list->string (list (get-pref-value :externals :py-enviroment))))
        #+linux (setq (om::string+ "bash " (get-pref-value :externals :py-enviroment)))
       ; #+macos (setq (om::string+ "source " (get-pref-value :externals :py-enviroment)))
-)
+                                                                                           )
