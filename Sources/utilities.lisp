@@ -176,6 +176,14 @@
                               nil
                               lines))))) ;;  remove 
         
+
+;===============================
+(defun read-python-script-lines (pathname-of-code)
+
+    (remove nil (get-file pathname-of-code)))
+                
+
+
 ;===============================
 
 (defun remove-py-var (code var)

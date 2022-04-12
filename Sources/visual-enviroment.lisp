@@ -13,16 +13,24 @@
                      (reduce #'(lambda (s1 s2) 
                             (concatenate 'string s1 (string #\Newline) s2)) (text (reference (car (om::list! selected-boxes))))) nil))
        (var (car (cdr vs-code)))
-       (add-lisp-var (om::string+ "#(" (write-to-string (first vs-code)) " " (write-to-string (second vs-code))))
+       
+       
        (python-var (mapcar (lambda (y) `(om::string+ ,y)) (mapcar (lambda (x) (string+ (write-to-string x) " " "= ")) var)))
+       
        (input-values (mapcar (lambda (x) (omng-box-value x)) (inputs (car (om::list! selected-boxes))))) ;; get input values
-       (separation (om::string+ "# ======================= Add OM Variables ABOVE this Line ========================" (string #\Newline)))
+       
+       (separation1 (om::string+ "# ======================= Add OM Variables BELOW this Line ========================" (string #\Newline)))
+
+       (separation2 (om::string+ "# ======================= Add OM Variables ABOVE this Line ========================" (string #\Newline)))
+       
        (format2python (mapcar (lambda (x) (om-py::format2python-v3 x)) input-values))
+       
        (lisp-var2py-var (mapcar (lambda (x y) `(,@x ,y (string #\Newline))) python-var (om::list! format2python)))
+       
        (lisp-2-python-var (eval `(om-py::concatstring (om::x-append ,@lisp-var2py-var nil nil))))
        
        (path (om::save-as-text 
-                     (om::string+ add-lisp-var (string #\Newline) (string #\Newline) lisp-2-python-var separation (third vs-code))
+                     (om::string+ separation1 (string #\Newline) lisp-2-python-var (string #\Newline) separation2 (third vs-code))
                      (om::tmpfile (om::string+ "tmp-code-" (write-to-string (om::om-random 100 999)) ".py") :subdirs "om-py"))))
        
        (mp:process-run-function (string+ "VSCODE Running!") ;; Se não, a interface do OM trava
@@ -30,34 +38,53 @@
                                           (lambda () (vs-code-update-py-box path selected-boxes (second vs-code))))
        (setq *vscode-is-open?* t)))
     
-;; ;; ==========================================================================
+;; ==========================================================================
+
+(defun get-python-var-from-script (x)
+
+(remove nil (loop :for lines :in x 
+      :while (not (equal lines "# ======================= Add OM Variables ABOVE this Line ========================"))
+      :collect (if (or (equal lines "# ======================= Add OM Variables BELOW this Line ========================") (equal lines ""))
+                   nil
+                   (car (om::string-to-list lines))))))
+
+; ==============================================================================
+
+(defun remove-om2py-adaptation (x)
+
+(set 'fim-das-variaves nil)
+
+(loop :for lines :in x 
+      :do (if (equal lines "# ======================= Add OM Variables ABOVE this Line ========================")
+              (set 'fim-das-variaves t))
+      :collect (if (eval 'fim-das-variaves) lines nil)))
+
+
+;; =============================================================================
 
 (defun vs-code-update-py-box (path selected-boxes variables)
 
 (let* (
        
        (wait-edit-process (oa::om-command-line (om::string+ "code " (namestring path) " -w") nil))
-       
-       (get-var-in-py (car (om-py::get-lisp-variables path)))
-       (remove-all-non-lisp-text  (let* (
-                                        (remove-var-in-py (om-py::remove-lisp-var path))
-                                        (string get-var-in-py)
-                                        (var (om-py::concatstring (om::last-n (om-py::char-by-char string) (- (length (om-py::char-by-char string)) 8))))
-                                        (var-fix (remove ")" var :test (lambda (a b) (eql (aref a 0) b))))
-                                        (var-fix (remove "(" var-fix :test (lambda (a b) (eql (aref a 0) b))))
-                                        (all-var-names (om::string-to-list var-fix " "))
-                                        (remake-init-of-var-definition (mapcar (lambda (x) (om::string+ x " " "=" " ")) all-var-names))
-                                        (remove-py-var (om-py::remove-py-var remove-var-in-py remake-init-of-var-definition))
-                                        (remove-notice (om-py::remove-py-var remove-py-var '("# ======================= Add OM Variables ABOVE this Line ========================")))
-                                        (remove-linha-a-mais (if (equal (car remove-py-var) "") (cdr remove-notice) remove-notice)))
-                                        (if (equal (car (last remove-linha-a-mais)) "") (om::first-n remove-linha-a-mais (- (length remove-linha-a-mais) 1)) remove-linha-a-mais)))     
+       (get-var-in-py (get-python-var-from-script (om-py::read-python-script-lines path)))
+       (remove-all-non-lisp-text  
+              (let* (
+                     (python-script-lines (om-py::read-python-script-lines path))
+                     (remove-om2py-adaptation (remove-om2py-adaptation python-script-lines))
+                     (remove-notice-2 (om-py::remove-py-var remove-om2py-adaptation  '("# ======================= Add OM Variables ABOVE this Line ========================")))
+                     (remove-extra-line (if (equal (car remove-notice-2) "") (cdr remove-notice-2) remove-notice-2)))
+                     (if (equal (car (last remove-notice-2)) "") (om::first-n remove-notice-2 (- (length remove-notice-2) 1)) remove-notice-2)))   
        
        (read-edited-code 
               (om-py::py-list->string (list 
-                                          (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
+                     (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
+       
+       (get-var-in-py-formatted (concatstring (om::flat (mapcar (lambda (x) (x-append x " ")) get-var-in-py))))
        (variables-in-lisp   (if    (null get-var-in-py)
                                    (x-append (om::string+ "(py_var " (write-to-string variables)) read-edited-code ")")
-                                   (x-append get-var-in-py read-edited-code ")")))
+                                   (x-append (om::string+ "(py_var ("  get-var-in-py-formatted ")" (string #\Newline)) read-edited-code ")")))
+       
        (from-box (if (equal (type-of (reference (car (om::list! selected-boxes)))) 'OMPyFunctionInternal)
                      (om::make-value 'OMPYFunction  (list (list :text variables-in-lisp)))
                      (om::make-value 'run-py-f  (list (list :text variables-in-lisp)))))
