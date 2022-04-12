@@ -10,10 +10,10 @@
       "Sources/package.lisp"
       "Sources/utilities"
       "Sources/py"
-      "Sources/omsharp-enviroment"
+      "Sources/visual-enviroment"
       )
 
 (:symbols 
-      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-modules" "om-py::py-mk-list" "om-py::py-concat-code" "om-py::py-append-code")
+      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-modules" "om-py::py-remove-ext-modules" "om-py::py-mk-list" "om-py::py-concat-code" "om-py::py-append-code")
       (:class "om-py::python")
       (:special-items py py-code)))

@@ -302,7 +302,6 @@
 ; Functions to be used in the patches METHODS
 ; =======================================================
 
-
 (defmethod! run-py ((code python) &key (cabecario nil) (remove-tmpfile t))
 :initvals '(nil)
 :indoc '("run py") 
@@ -331,8 +330,7 @@
             (read_from_python (if   (null data)        
                                             nil
                                            (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
-
-                               
+                     
 ;; ========================
 
 (defmethod! py-add-var ((function function) &rest rest)
@@ -357,7 +355,6 @@
 (om::make-value 'om-py::python (list (list :code (concatString (loop :for code :in codes :collect (if (null code)
                                                                                                       nil 
                                                                                                     (code code))))))))
-
 ;; ========================
 
 (defmethod! py-append-code (&rest rest)
@@ -368,10 +365,9 @@
 
 (py-concat-code (flat (om::x-append rest nil nil))))
 
-
 ;; ========================
 
-(defmethod! py-remove-ext-modules (string string)
+(defmethod! py-remove-ext-modules ((string string))
 :initvals '(nil)
 :indoc '("run py") 
 :icon 'py-f

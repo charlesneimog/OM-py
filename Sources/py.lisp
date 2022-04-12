@@ -374,30 +374,24 @@ to_om(list_of_numbers)
 
 (defmethod omNG-make-special-box ((reference (eql 'py)) pos &optional init-args)
   
-  ;; ======================
-  
   (let* (
-        (py-script-name (if (null (car (list! init-args))) " new-py-script " (write-to-string  (car (list! init-args)))))
-
+        (py-script-name (if (null (car (list! init-args))) " new-py-script " (write-to-string (car (list! init-args)))))
         (adapt-window (if (> (length py-script-name) 14)
                           py-script-name
                           (let* (
-                                (length-of-name (round (/ (- 14 (length py-script-name)) 2)))
-                                (length-of-name (if (oddp length-of-name) (+ length-of-name 1) length-of-name))
+                                (ideal-length (round (/ (- 14 (length py-script-name))) 2))
+                                (length-even-number (if (oddp ideal-length) (+ ideal-length 1) ideal-length))
+                                (length-of-name (if (< length-even-number 1) 2 length-even-number))
                                 (backspace (reduce (lambda (x y) (concatenate 'string x y)) (om::repeat-n " " length-of-name))))
                                 (om::string+ backspace py-script-name backspace))))
-        
-        ;(verbose (om::om-print adapt-window "name of script: "))
         (script-text (let* (
-                          (script-pathname (merge-pathnames (om::string+ py-script-name ".py") (get-pref-value :externals :py-scripts)))
-                          (file-exits? (probe-file script-pathname)))
-                          (if file-exits?
-                                          (read-python-script script-pathname)
-                                          *default-py-run-function-text*))))
+                            (script-pathname (merge-pathnames (om::string+ py-script-name ".py") (get-pref-value :externals :py-scripts)))
+                            (file-exits? (probe-file script-pathname)))
+                                (if file-exits?
+                                      (read-python-script script-pathname)
+                                      *default-py-run-function-text*))))
         
-(omNG-make-new-boxcall
-      (make-instance 
-              'run-py-f-internal :name adapt-window :text script-text) pos (om::list! adapt-window))))
+(omNG-make-new-boxcall (make-instance 'run-py-f-internal :name adapt-window :text script-text) pos (om::list! adapt-window))))
 
 ;; ======================================================
 ;; ======================================================

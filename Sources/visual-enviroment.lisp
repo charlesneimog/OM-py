@@ -99,8 +99,6 @@
   
        (let* ((patch (find-persistant-container (object (editor self))))
               (new-box (omNG-make-special-box 'py position (list (read-from-string str)))))
-              ;(print new-box)
-              
               (when new-box
                      (store-current-state-for-undo (editor self))
                      (add-box-in-patch-editor new-box self))))
