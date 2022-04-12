@@ -198,7 +198,7 @@
          (selected-connections (get-selected-connections editor))
          (player-active (and (boundp '*general-player*) *general-player*)))
 
-(print key)   
+;(print key)   
 
 (when panel
 
