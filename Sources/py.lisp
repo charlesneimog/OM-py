@@ -296,8 +296,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
   #'(lambda () (om-lisp::change-text-edit-font (window self))))
 
 
-
-
 ;; ===============================================================
 ;; ================ Python Code Editor Inside OM =================
 ;; ================ Python Code Editor Inside OM =================
@@ -340,10 +338,8 @@ to_om(list_of_numbers)
 
 \"  )"))
 
-;; ======
-
-
 ;; ==================================== READ PYTHON SCRIPT
+
 (defun read-python-script (path)
 
     (let* (
@@ -444,6 +440,75 @@ to_om(list_of_numbers)
                         (setf (error-flag self) t)
                        `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
 (compile (eval function-def))))
+
+
+
+;;; ==============================
+;;; Externalize File
+;;; ==============================
+
+;============================================================================
+; Py Function as external file
+;============================================================================
+
+(defclass OMpyFunctionFile (OMPersistantObject run-py-f) ()
+  (:default-initargs :icon :py-script)
+  (:metaclass omstandardclass))
+
+(add-om-doctype :textfun "py" "Python Script")
+
+(defmethod object-doctype ((self run-py-f)) :textfun)
+
+(defmethod type-check ((type (eql :textfun)) obj)
+  (let ((fun (ensure-type obj 'run-py-f)))
+    (when fun
+      (change-class fun 'OMpyFunctionFile)
+      (setf (icon fun) :py-script)) ;;; ICONE QUANDO É EXTERNALIZADO
+    fun))
+
+
+; For conversions
+(defmethod internalized-type ((self OMpyFunctionFile)) 'run-py-f-internal)
+(defmethod externalized-type ((self run-py-f)) 'OMpyFunctionFile)
+(defmethod externalized-icon ((self run-py-f)) :py-script)
+
+(defmethod make-new-om-doc ((type (eql :pyfun)) name)
+  (make-instance 'OMpyFunctionFile
+                 :name name
+                 :text *default-lisp-function-text*))
+
+(defmethod save-document ((self OMpyFunctionFile))
+  (call-next-method)
+  (update-py-fun self))
+
+(defmethod omng-save-relative ((self OMpyFunctionFile) ref-path)
+  `(:textfun-from-file
+    ,(if (mypathname self)
+         (omng-save (om::om-print (relative-pathname (mypathname self) ref-path) "test"))
+       (omng-save (om::om-print (pathname (name self))) "test"))))
+
+
+(defmethod om-load-from-id ((id (eql :textfun-from-file)) data)
+  (let* ((path (omng-load (car data)))
+         (checked-path (and (pathname-directory path)  ;; normal case
+                            (check-path-using-search-path path)))
+         (pyfun
+
+              (if checked-path
+                  (load-doc-from-file checked-path :textfun)
+                  (let ((registered-entry (find (pathname-name path) *open-documents*
+                                          :test 'string-equal :key #'(lambda (entry) (name (doc-entry-doc entry))))))
+                  (om::om-print registered-entry "test")
+                  (when registered-entry
+                      (doc-entry-doc registered-entry))) )))
+
+    (unless pyfun
+      (om-beep-msg "PY-FUN FILE NOT FOUND: ~S !" path)
+      (setf pyfun (make-instance 'OMpyFunctionFile :name (pathname-name path)))
+      (setf (mypathname pyfun) path))
+
+    pyfun))
+
 
 ;;;===================
 ;;; py FUNCTION BOX
@@ -551,7 +616,7 @@ to_om(list_of_numbers)
   (format nil "~A  [internal py function]" (name self)))
 
 (defmethod om-lisp::type-filter-for-text-editor ((self run-py-function-editor-window))
-  '("py function" "*.olsp"))
+  '("py function" "*.py"))
 
 ;;; this will disable the default save/persistent behaviours of the text editor
 ;;; these will be handled following the model of OMPatch
