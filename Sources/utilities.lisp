@@ -323,7 +323,6 @@
 (let* (
       (python-code (code (py-append-code cabecario code)))
       (python-name (om::string+ "py-code-temp-" (write-to-string (om-random 10000 999999)) ".py"))
-      (data-name (om::string+ "data" (write-to-string (om-random 10000 999999)) ".txt"))
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
       (prepare-cmd-code (py-list->string (list (namestring save-python-code))))
       (where-i-am-running 
@@ -348,7 +347,7 @@
 :doc ""
 
 (let* (
-      (check-all-rest (loop :for type :in (om::list! rest) :collect (format2python-py-add-var type)))
+      (check-all-rest (loop :for type :in rest :collect type))
       (py-var (apply 'mapcar function check-all-rest)))
       (om::make-value 'python (list (list :code (concatstring (mapcar (lambda (x) (code x)) py-var)))))))
 
@@ -362,7 +361,10 @@
 
 (om::make-value 'om-py::python (list (list :code (concatString (loop :for code :in codes :collect (if (null code)
                                                                                                       nil 
-                                                                                                    (code code))))))))
+                                                                                                    (case (type-of code) 
+                                                                                                          ('|om-python|::py-externals-mod (om::string+ (modules code) (string #\Newline)))
+                                                                                                          ('|om-python|::python (om::string+ (code code) (string #\Newline)))))))))))
+
 ;; ========================
 
 (defmethod! py-append-code (&rest rest)
@@ -402,7 +404,7 @@
       (import-modules (om::x-append 
                                     (om::list! import)
                                     (mapcar (lambda (x) (car x)) from_import)
-                                    (mapcar (lambda (x) (car x)) (om::list! import*))))
+                                    (om::list! import*)))
       (verification-module 
                   (loop :for module :in (om::list! import-modules) 
                         :collect (format nil 
@@ -442,10 +444,15 @@ from om_py import to_om
 import ~d" modules)))
             (format-from_import (loop for modules :in (om::list! from_import) :collect (format nil "
 from ~d import ~d" (car modules) (second modules))))
+            (format_import* (loop for modules :in (om::list! import*) :collect (format nil "
+from ~d import *" modules)))
+
+
+
             (all-modules 
                   (concatstring (om::x-append 
 "
-from om_py import to_om" format-import format-from_import))))
+from om_py import to_om" format-import format-from_import format_import*))))
       (om::make-value 'py-externals-mod (list (list :modules all-modules))))))
 
 ;==================================
