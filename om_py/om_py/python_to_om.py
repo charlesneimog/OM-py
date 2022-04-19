@@ -11,7 +11,14 @@ except:
     import_vamp = False
 
 import ctypes as c
-import numpy as numpy
+
+
+try:
+    import numpy as numpy
+    import_numpy = True
+except:
+    import_numpy = False
+
 import os
 
 # ============================================================================= 
@@ -66,9 +73,21 @@ def lispify(L):
         return 'nil'
     else:
         # LISTS ARE RECURSIVE
-        if (isinstance(L, tuple) or isinstance(L, numpy.ndarray)):
+        if isinstance(L, tuple):
             s = [element.lisp for element in L]
             return '(' + ' '.join(s) + ')'
+        
+            if import_numpy:
+                if isinstance(L, numpy.ndarray):
+                    s = [element.lisp for element in L]
+                    return '(' + ' '.join(s) + ')'
+                
+                if (isinstance(L, numpy.int64) or isinstance(L, numpy.int32) or isinstance(L, numpy.float64) or isinstance(L, numpy.float32)):
+                    return L.lisp
+                else:
+                    None
+            else:
+                print('Numpy is not installed. Please install numpy!!')
 
         elif (isinstance(L, list)):
             lispify_list = [lispify(element) for element in L]
@@ -83,15 +102,10 @@ def lispify(L):
 
         # ATOMS
 
-        elif (
-            isinstance(L, float)
-            or isinstance(L, int)
-            or isinstance(L, numpy.int64)
-            or isinstance(L, numpy.int32)
-            or isinstance(L, numpy.float64)
-            or isinstance(L, numpy.float32)
-        ):
+        elif (isinstance(L, float) or isinstance(L, int)):
             return L.lisp
+
+
 
         elif isinstance(L, str):
             new_path = L.replace('\\', '/')
@@ -111,14 +125,19 @@ get_dict(str)['lisp'] = property(lambda s:'"{}"'.format(str(s))) # String
 get_dict(float)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float
 get_dict(int)['lisp'] = property(lambda f:'{}'.format(str(f))) # int
 get_dict(complex)['lisp'] = property(lambda complex:'#C({0} {1})'.format(complex.real, complex.imag)) # Complex
-get_dict(numpy.int64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int64
-get_dict(numpy.int32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int32
-get_dict(numpy.float64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float64
-get_dict(numpy.float32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float32
 get_dict(list)['lisp'] = property(lispify) # List
 get_dict(tuple)['lisp'] = property(lispify) # Tuple
 get_dict(dict)['lisp'] = property(lispify) # Dict
-get_dict(numpy.ndarray)['lisp'] = property(lispify) # Numpy Array
+
+
+## =================
+
+if import_numpy:
+    get_dict(numpy.int64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int64
+    get_dict(numpy.int32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Int32
+    get_dict(numpy.float64)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float64
+    get_dict(numpy.float32)['lisp'] = property(lambda f:'{}'.format(str(f))) # Float32
+    get_dict(numpy.ndarray)['lisp'] = property(lispify) # Numpy Array
 
 if import_vamp:
     get_dict(vamp.vampyhost.RealTime)['lisp'] = property(lambda f:'{}'.format(str(f))) # Vamp RealTime plugin

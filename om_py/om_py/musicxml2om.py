@@ -2,7 +2,6 @@ import html_to_json
 from om_py import to_om
 import math
 
-
 def names2ratio (names):
     if names == "breve":
         return 2/1
