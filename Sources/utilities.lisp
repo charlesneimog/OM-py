@@ -10,8 +10,6 @@
 
 ;https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-strings
 
-
-
 (eval (om::flat 
                   (om::get-slot-val 
                      (let
@@ -26,7 +24,7 @@
                               
 #+windows (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "OM-py-env/Scripts/activate.bat" (om::tmpfile ""))))) "nil")
 #+linux (defvar *activate-virtual-enviroment* (om::string+ "bash " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))) "nil")
-;#+macosx (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "OM-py-env/Scripts/activate.sh" (om::tmpfile ""))))) "nil")
+#+mac (defvar *activate-virtual-enviroment* (om::string+ "source " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))) "nil")
 
 ; =================================
 ;; Pip install venv if first load
@@ -37,22 +35,34 @@
             (om::save-as-text '(((defvar *first-time-load* nil))) (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py"))))
             (print "Installing venv!")
             (oa::om-command-line 
-                        #+macosx "pip3 install virtualenv"
+                        #+mac "python3 -m pip install virtualenv"
                         #+windows "pip install virtualenv"
                         ;#+linux "sudo apt install python3.8-venv -S"
                                                                   t)
                   ;; Pip create env 
             (oa::om-command-line 
-                  #+macosx  (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
+                  #+mac  (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))
                   #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
                   ;#+linux (om::string+ "python3.8 -m venv " (py-list->string (list (namestring (merge-pathnames "Python/" (om::tmpfile ""))))))    
                                              
                                               t)
+            
+            (if (equal (software-type) "Darwin")
+                  
+                  (let* ()
+                  (print "I am on MacOS!!")
+
+                  (mp:process-run-function "Install OM_py!"
+                                   () 
+                                          (lambda () (let* ()
+                                                            (sleep 2)                                      
+                                                            (om::om-shell (om::string+ *activate-virtual-enviroment* " && python3 -m pip install om_py")))))))
+            ;#+mac (sleep 10)
                                     
 ;; pip always use venv
 
             (oa::om-command-line 
-                  #+macosx (om::string+ *activate-virtual-enviroment* " && pip3 install om_py") 
+                  #+mac (om::string+ *activate-virtual-enviroment* " && python3 -m pip install om_py") 
                   #+windows (om::string+ *activate-virtual-enviroment* " && pip install om_py")
                   #+linux (om::string+ *activate-virtual-enviroment* " && pip3 install om_py")
                               t)))
@@ -326,7 +336,7 @@
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
       (prepare-cmd-code (py-list->string (list (namestring save-python-code))))
       (where-i-am-running 
-                              #+macosx (om::string+ *activate-virtual-enviroment* " && python3 ")
+                              #+mac (om::string+ *activate-virtual-enviroment* " && python3 ")
                               #+windows (om::string+ *activate-virtual-enviroment* " && python ")
                               #+linux (om::string+ *activate-virtual-enviroment* " && python3.8 ")))
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
@@ -362,9 +372,7 @@
 (om::make-value 'om-py::python (list (list :code (concatString (loop :for code :in codes :collect (if (null code)
                                                                                                       nil 
                                                                                                     (case (type-of code) 
-                                                                                                          ('|om-python|::py-externals-mod (om::string+ (modules code) (string #\Newline)))
-                                                                                                          ('|om-python|::python (om::string+ (code code) (string #\Newline)))))))))))
-
+                                                                                                          ('|om-python|::py-externals-mod (om::string+ (modules code) (string #\Newline)))                                                                                           ('|om-python|::python (om::string+ (code code) (string #\Newline)))))))))))
 ;; ========================
 
 (defmethod! py-append-code (&rest rest)
@@ -393,6 +401,10 @@
 :indoc '("import YOURMODULE" "from YOURMODULE import YOURFUNCTION" "import YOURMODULE*") 
 :icon 'py-f
 :doc ""
+
+;; COLOCAR UM MODO DE SEMPRE RODAR O PIP UPGRADE PIP
+
+
 (if   
       (or (= 2 (list-depth from_import)) (null from_import))
             from_import
@@ -429,7 +441,7 @@ from om_py import to_om
                               (install_modules 
                                     (case (car visual-message)
                                           (1 (om::om-cmd-line 
-                                                      #+macosx (format nil "~d && pip3 install ~d" *activate-virtual-enviroment* not_installed)
+                                                      #+mac (format nil "~d && python3 -m pip install ~d" *activate-virtual-enviroment* not_installed)
                                                       #+windows (format nil "~d && pip install ~d" *activate-virtual-enviroment*  not_installed)
                                                       #+linux (format nil "~d && pip3 install ~d" *activate-virtual-enviroment*  not_installed)))
                                           (0 nil)
@@ -446,9 +458,6 @@ import ~d" modules)))
 from ~d import ~d" (car modules) (second modules))))
             (format_import* (loop for modules :in (om::list! import*) :collect (format nil "
 from ~d import *" modules)))
-
-
-
             (all-modules 
                   (concatstring (om::x-append 
 "
@@ -464,6 +473,19 @@ from om_py import to_om" format-import format-from_import format_import*))))
 :doc ""
 
 (lisp-list_2_python-list list))
+
+
+;==================================
+
+(defmethod! py-open-script ((python pathname))
+:initvals '(nil)
+:indoc '("Python class") 
+:icon 'py-f
+:doc ""
+
+(oa::om-command-line (om::string+ "code " (namestring pathname) " -w") nil))
+
+
 
 ;==================================
 
