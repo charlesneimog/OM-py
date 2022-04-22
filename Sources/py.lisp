@@ -296,6 +296,8 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
   #'(lambda () (om-lisp::change-text-edit-font (window self))))
 
 
+
+
 ;; ===============================================================
 ;; ================ Python Code Editor Inside OM =================
 ;; ================ Python Code Editor Inside OM =================
@@ -338,8 +340,10 @@ to_om(list_of_numbers)
 
 \"  )"))
 
-;; ==================================== READ PYTHON SCRIPT
+;; ======
 
+
+;; ==================================== READ PYTHON SCRIPT
 (defun read-python-script (path)
 
     (let* (
@@ -441,8 +445,6 @@ to_om(list_of_numbers)
                        `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
 (compile (eval function-def))))
 
-
-
 ;;; ==============================
 ;;; Externalize File
 ;;; ==============================
@@ -508,6 +510,7 @@ to_om(list_of_numbers)
       (setf (mypathname pyfun) path))
 
     pyfun))
+
 
 
 ;;;===================
