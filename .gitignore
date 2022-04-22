@@ -1,3 +1,6 @@
 *~
 *.lisp~
 *.html
+*.mp3
+*.wav
+*.aif
