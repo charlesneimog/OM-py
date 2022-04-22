@@ -476,6 +476,10 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 
 ;==================================
+(defmethod! py-open-script ((python string))
+
+(py-open-script (probe-file python)))
+
 
 (defmethod! py-open-script ((python pathname))
 :initvals '(nil)
@@ -483,7 +487,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
 :icon 'py-f
 :doc ""
 
-(oa::om-command-line (om::string+ "code " (namestring pathname) " -w") nil))
+(oa::om-command-line (om::string+ "code " (namestring python) " -w") nil))
 
 
 
