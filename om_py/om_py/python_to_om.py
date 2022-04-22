@@ -152,3 +152,12 @@ def to_om (L):
     file_object.write(lispify(L))
     file_object.write("\n")
     file_object.close()
+
+## ===========================================================================
+
+def om_print (L):
+    import argparse
+    from pythonosc import udp_client
+    client = udp_client.SimpleUDPClient("127.0.0.1", 1995)
+    client.send_message("/om-print", lispify(L))
+    return None
