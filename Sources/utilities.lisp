@@ -320,6 +320,19 @@
 ; Functions to be used in the patches METHODS
 ; =======================================================
 
+(defun start-python-print-server ()
+(om::om-start-udp-server 1995 "127.0.0.1" 
+            (lambda (msg) (let () (let* () (om::om-print (om::string+ (write-to-string (car (cdr (om::osc-decode msg)))) (string #\Newline)) "Python")  nil)))))
+
+; =======================================================
+
+(defun stop-python-print-server ()
+(loop :for udp-server :in om::*running-udp-servers*
+                  :do (if (equal (mp:process-name (third udp-server)) "UDP receive server on \"127.0.0.1\" 1995")
+                  (let* () (om::om-stop-udp-server (third udp-server))))))
+
+; =======================================================
+
 (defmethod! run-py ((code python) &key (cabecario nil) (remove-tmpfile t))
 :initvals '(nil)
 :indoc '("run py") 
@@ -329,6 +342,10 @@
 
 (if om::*vscode-is-open?* 
     (let () (om::om-message-dialog "You need to close VScode First to update the code!") (om::abort-eval))) ;; MAKE A DIALOG
+
+; ================= PYTHON PRINT ON OM ==========================================
+(start-python-print-server)
+; ================= PYTHON PRINT ON OM ==========================================
 
 (let* (
       (python-code (code (py-append-code cabecario code)))
@@ -344,6 +361,7 @@
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
             (mp:process-run-function "del-py-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (om::tmpfile python-name :subdirs "om-py"))
             (mp:process-run-function "del-data-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
+            (stop-python-print-server)
             (read_from_python (if   (null data)        
                                             nil
                                            (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
