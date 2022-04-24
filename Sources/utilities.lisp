@@ -508,7 +508,6 @@ from om_py import to_om" format-import format-from_import format_import*))))
 (oa::om-command-line (om::string+ "code " (namestring python) " -w") nil))
 
 
-
 ;==================================
 
 (defmethod! py->text ((python python))

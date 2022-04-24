@@ -8,7 +8,7 @@ def read(*paths):
     with open(os.path.join(*paths), 'r') as f:
         return f.read()
 
-VERSION = '0.0.11'
+VERSION = '0.0.13'
 DESCRIPTION = 'This is a simple package to help musicians that do not use a lot of code. '
 LONG_DESCRIPTION = 'CHARLESNEIMOG.COM'
 
@@ -23,7 +23,7 @@ setup(
     long_description = ( read('README.rst') + '\n\n' + read('COPYING.rst') ),
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    install_requires=['html_to_json'],
+    install_requires=['html_to_json', 'python-osc'],
     keywords=['python', 'CAC', 'OpenMusic'],
     classifiers=[
         "Operating System :: Unix",
