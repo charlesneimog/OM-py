@@ -528,7 +528,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 ;================================== CHECK OM-PY UPDATE ============================
 
-(defparameter *om-py-version* 0.1)
+(defparameter *this-version* 0.1)
 
 (let* (
       (tmpfile (om::tmpfile "om-sharp-version.txt"))
@@ -537,13 +537,14 @@ from om_py import to_om" format-import format-from_import format_import*))))
             #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
             #+linux(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)))
       (eval (read-from-string (car (uiop:read-file-lines tmpfile))))
-      (if (> *actual-version* (read-from-string 0.1))
+      (print *actual-version*)
+      
+      (if (> *actual-version* *this-version*)
           (let* (
-                (update? (om::om-y-or-n-dialog (format nil "The library has been UPDATED to version ~d. Want to update now?" *actual-version-of-om-sharp*))))
-                (if update?
+                
+                 (update? (om::om-y-or-n-dialog (format nil "The library has been UPDATED to version ~d. Want to update now?" (write-to-string *actual-version*)))))   
+            (if update?
                     (let* ()
                           (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))))
       (alexandria::delete-file tmpfile))
-
-(om-py-check-update "charlesneimog/OM-py/master/Sources/version.lisp")
-                          
+               
