@@ -1,1 +1,1 @@
-(defparameter *om-py-last-update* 0.1.2)
+(defparameter *om-py-last-update* 0.2)
