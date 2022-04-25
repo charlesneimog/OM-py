@@ -526,3 +526,31 @@ from om_py import to_om" format-import format-from_import format_import*))))
 (remove-dup (loop :for class :in x :collect (type-of class)) 'eq 1))
 
 
+;================================== CHECK OM-PY UPDATE ============================
+
+(defparameter *om-py-version* 0.1.1)
+
+
+(defun check-update(WEB-path_to_file)
+
+      (with-open-stream 
+            (http (comm:open-tcp-stream 
+                    "raw.githubusercontent.com" 443
+                    :ssl-ctx t
+                    :element-type '(unsigned-byte 8)))
+            (write-sequence (format 
+                        http "GET ~d HTTP/1.1~%Host: raw.githubusercontent.com~%~%" WEB-path_to_file
+                        (code-char 13) (code-char 10)
+                        (code-char 13) (code-char 10)) http)
+      (force-output http)
+
+      (ignore-errors (loop :for line := (read-line http nil)
+                           :while line
+                           :do (let* () 
+                                    (setf *version* line)
+                                    (if (search "*om-py-last-update*" line)
+                                        (close http) 
+                                      nil)))))
+      (eval *version*)
+      *om-py-last-update*
+      )
