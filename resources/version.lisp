@@ -1,1 +1,1 @@
-(defparameter *om-py-last-update* 0.2)
+(defparameter *actual-version* 0.2)
