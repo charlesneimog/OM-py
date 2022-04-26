@@ -51,9 +51,7 @@
 ; ==============================================================================
 
 (defun remove-om2py-adaptation (x)
-
 (set 'fim-das-variaves nil)
-
 (loop :for lines :in x 
       :do (if (equal lines "# ======================= Add OM Variables ABOVE this Line ========================")
               (set 'fim-das-variaves t))
@@ -80,7 +78,7 @@
               (om-py::py-list->string (list 
                      (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
        
-       (get-var-in-py-formatted (concatstring (om::flat (mapcar (lambda (x) (x-append x " ")) get-var-in-py))))
+       (get-var-in-py-formatted (om-py::concatstring (om::flat (mapcar (lambda (x) (x-append x " ")) get-var-in-py))))
        (variables-in-lisp   (if    (null get-var-in-py)
                                    (x-append (om::string+ "(py_var " (write-to-string variables)) read-edited-code ")")
                                    (x-append (om::string+ "(py_var ("  get-var-in-py-formatted ")" (string #\Newline)) read-edited-code ")")))
@@ -96,10 +94,7 @@
        (om-py::clear-the-file path)
        (om::om-print "Closing VScode!" "OM-Py")))
 
-
-
 ;; ========================================================================================
-
 
 (defun list-search-py-contents (path)
   (and path
@@ -107,7 +102,6 @@
                      :files t :directories nil
                      :type '("py")
                      :recursive (get-pref-value :files :search-path-rec))))
-
 
 ;; ========================================================================================
 
@@ -118,12 +112,9 @@
                                          (append (list-search-py-contents (get-pref-value :externals :py-scripts))))))
         (remove-if #'(lambda (str) (not (equal 0 (search string str :test 'string-equal)))) (append searchpath-strings)))))
 
-
 ;; ========================================================================================
 
 (defmethod new-python-box-in-patch-editor ((self patch-editor-view) str position)
-  
-  
        (let* ((patch (find-persistant-container (object (editor self))))
               (new-box (omNG-make-special-box 'py position (list (read-from-string str)))))
               (when new-box
@@ -131,7 +122,6 @@
                      (add-box-in-patch-editor new-box self))))
 
 ;; ========================================================================================
-
 (defmethod enter-new-py-script ((self patch-editor-view) position &optional type)
 
   (let* ((patch (object (editor self)))
@@ -140,11 +130,10 @@
                              #'(lambda (string) (unless (string-equal string prompt)
                                                   (py-script-completion patch string)))
                            'box-name-completion))
-         
-         
+         (verbose (print completion-fun))
          (textinput
               (om-make-di 'text-input-item
-                     :text prompt
+                     :text (print prompt)
                      :fg-color (om-def-color :gray)
                      :di-action #'(lambda (item)
                                      (let ((text (om-dialog-item-text item)))
@@ -153,7 +142,9 @@
                                        (unless (string-equal text prompt)
                                                  (if (equal type :py)
                                                         (new-python-box-in-patch-editor self text position)
-                                                        "I do not know what you want to do!"))                                                                             
+                                                        (let* ()
+                                                               (om::om-print "I do not know what you want to do!" "om-py")
+                                                               (om::abort-eval))))                                                                            
                                        (om-set-focus self)))
 
                                             
@@ -186,8 +177,6 @@
                    :py)
     ))
 
-
-
 ;; ========================================================================================
 
 (defmethod editor-key-action ((editor patch-editor) key)
@@ -197,8 +186,6 @@
          (selected-boxes (get-selected-boxes editor))
          (selected-connections (get-selected-connections editor))
          (player-active (and (boundp '*general-player*) *general-player*)))
-
-;(print key)   
 
 (when panel
 
@@ -328,12 +315,8 @@
                (auto-connect-seq selected-boxes editor panel)))
 
         (#\r (unless (edit-lock editor)
-               (store-current-state-for-undo editor)
-
-               (let* ()
-                     (print selected-boxes)
-               
-               (mapc 'set-reactive-mode (or selected-boxes selected-connections)))))
+                     (store-current-state-for-undo editor)
+                     (mapc 'set-reactive-mode (or selected-boxes selected-connections))))
 
         (#\i (unless (edit-lock editor)
                (store-current-state-for-undo editor)
