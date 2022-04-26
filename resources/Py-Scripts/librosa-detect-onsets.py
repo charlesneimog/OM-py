@@ -1,6 +1,6 @@
-#(py_var (sound)
-
+# ======================= Add OM Variables BELOW this Line ========================
 sound =  "None"
+
 # ======================= Add OM Variables ABOVE this Line ========================
 
 import librosa

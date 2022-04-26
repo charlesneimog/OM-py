@@ -1,6 +1,7 @@
-#(py_var (musicxml_file)
+# ======================= Add OM Variables BELOW this Line ========================
 
 musicxml_file = "C:/Users/charl/OneDrive_usp.br/Documents/OpenMusic/in-files/Piece.musicxml"
+
 # ======================= Add OM Variables ABOVE this Line ========================
 
 import music21 

@@ -1,6 +1,7 @@
-#(py_var (audio_files)
+# ======================= Add OM Variables BELOW this Line ========================
 
-audio_files = None
+audio_files =  None
+
 # ======================= Add OM Variables ABOVE this Line ========================
 
 import matplotlib.pyplot as plt
@@ -8,13 +9,9 @@ import numpy as np
 import librosa
 from om_py import to_om
 
-
-## =================================
-
 def amplitude_envelope(signal, frame_size, hop_length):
     
     amplitude_envelope = []
-    # calculate amplitude envelope for each frame
     for i in range(0, len(signal), hop_length): 
         amplitude_envelope_current_frame = max(signal[i:i+frame_size]) 
         amplitude_envelope.append(amplitude_envelope_current_frame)
@@ -24,7 +21,7 @@ def fancy_amplitude_envelope(signal, frame_size, hop_length):
     return np.array([max(signal[i:i+frame_size]) for i in range(0, len(signal), hop_length)])
 
 def max_amplitude_envelope (audio_file):
-    """Calculate the amplitude envelope of a signal with a given frame size nad hop length."""
+    
     FRAME_SIZE = 256
     HOP_LENGTH = 128
     audio, sr = librosa.load(audio_file)
