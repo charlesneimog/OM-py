@@ -33,7 +33,7 @@ With `my_om_number` inside py_var it will open and input in the `py` box.
 
 -----------------------------------------------------
 
-OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
+OM-py work with vscode too. For that select `py` or `py-code` box and press `z`. If the key is added to some function in OM-Sharp, I will need to change it.
 
 <img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=100% height=100%>
 
@@ -127,5 +127,12 @@ To make sure that all things are working:
 
 ### MacOS
 
-Coming soon!! I need a MacOS computer!
+1. Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
+2. Load om-py Library in OM-Sharp, the first load will download somethings. The could took some time.
+3. To open python scripts in vscode you need: 
+				3.1. Download, Install and Open Vscode.
+				3.2. Open command palette. (`shift + command + p`)
+	      3.3. Look for `Install code command in PATH`.
+	      3.4. Press `ENTER`.
+        3.5. If this do not work read this https://code.visualstudio.com/docs/setup/mac.
 
