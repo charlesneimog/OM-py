@@ -176,6 +176,18 @@
 
 ;; ======================================================
 
+(defun get-lisp-variables (pathname-of-code)
+
+    (remove nil (loop :for lines :in (read-python-script-lines pathname-of-code)
+                      :collect 
+                    (let* (
+                          (characters  (char-by-char lines))
+                          (is-py-var (equal (om-py::concatstring (om::first-n characters 8)) "#(py_var")))
+                          (if is-py-var
+                              (om-py::concatstring (cdr characters)))))))
+
+;; ======================================================
+
 (defun list-depth (list)
       "Returns the depth of a list."
       (if (listp list)

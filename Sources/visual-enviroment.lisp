@@ -6,6 +6,17 @@
 
 ;; ==========================================================================
 
+(defun get-python-var-from-script (x)
+
+(remove nil (loop :for lines :in x 
+      :while (not (equal lines "# ======================= Add OM Variables ABOVE this Line ========================"))
+      :collect (if (or (equal lines "# ======================= Add OM Variables BELOW this Line ========================") (equal lines ""))
+                   nil
+                   (car (om::string-to-list lines))))))
+
+
+;; ==========================================================================
+
 (defun open-vscode (selected-boxes)
 
 (let*  (
@@ -37,16 +48,6 @@
                                           (lambda () (vs-code-update-py-box path selected-boxes (second vs-code))))
        (setq *vscode-is-open?* t)))
     
-;; ==========================================================================
-
-(defun get-python-var-from-script (x)
-
-(remove nil (loop :for lines :in x 
-      :while (not (equal lines "# ======================= Add OM Variables ABOVE this Line ========================"))
-      :collect (if (or (equal lines "# ======================= Add OM Variables BELOW this Line ========================") (equal lines ""))
-                   nil
-                   (car (om::string-to-list lines))))))
-
 ; ==============================================================================
 
 (defun remove-om2py-adaptation (x)
@@ -66,7 +67,7 @@
 (let* (
        
        (wait-edit-process (oa::om-command-line (om::string+ "code " (namestring path) " -w") nil))
-       (get-var-in-py (get-python-var-from-script (om-py::read-python-script-lines path)))
+       (get-var-in-py (om::get-python-var-from-script (om-py::read-python-script-lines path)))
        (remove-all-non-lisp-text  
               (let* (
                      (python-script-lines (om-py::read-python-script-lines path))

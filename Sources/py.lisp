@@ -346,29 +346,25 @@ to_om(list_of_numbers)
 ;; ==================================== READ PYTHON SCRIPT
 (defun read-python-script (path)
 
-    (let* (
-        (get-var-in-py (car (om-py::get-lisp-variables path)))
-        (remove-all-non-lisp-text  (let* (
-                                          (remove-var-in-py (om-py::remove-lisp-var path))
-                                          (string get-var-in-py)
-                                          (var (om-py::concatstring (om::last-n (om-py::char-by-char string) (- (length (om-py::char-by-char string)) 8))))
-                                          (var-fix (remove ")" var :test (lambda (a b) (eql (aref a 0) b))))
-                                          (var-fix (remove "(" var-fix :test (lambda (a b) (eql (aref a 0) b))))
-                                          (all-var-names (om::string-to-list var-fix " "))
-                                          (remake-init-of-var-definition (mapcar (lambda (x) (om::string+ x " " "=" " ")) all-var-names))
-                                          (remove-py-var (om-py::remove-py-var remove-var-in-py remake-init-of-var-definition))
-                                          (remove-notice (om-py::remove-py-var remove-py-var '("# ======================= Add OM Variables ABOVE this Line ========================")))
-                                          (remove-linha-a-mais (if (equal (car remove-py-var) "") (cdr remove-notice) remove-notice)))
-                                          (if (equal (car (last remove-linha-a-mais)) "") (om::first-n remove-linha-a-mais (- (length remove-linha-a-mais) 1)) remove-linha-a-mais)))     
-        
-        (read-edited-code 
-                (om-py::py-list->string (list 
-                                            (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
-        (variables-in-lisp   (if    (null get-var-in-py)
-                                    (x-append (om::string+ "(py_var " (write-to-string variables)) read-edited-code ")")
-                                    (x-append get-var-in-py read-edited-code ")"))))
-        
-        variables-in-lisp))
+(let* (
+       (get-var-in-py (om::get-python-var-from-script (om-py::read-python-script-lines path)))
+       (remove-all-non-lisp-text  
+              (let* (
+                     (python-script-lines (om-py::read-python-script-lines path))
+                     (remove-om2py-adaptation (om::remove-om2py-adaptation python-script-lines))
+                     (remove-notice-2 (om-py::remove-py-var remove-om2py-adaptation  '("# ======================= Add OM Variables ABOVE this Line ========================")))
+                     (remove-extra-line (if (equal (car remove-notice-2) "") (cdr remove-notice-2) remove-notice-2)))
+                     (if (equal (car (last remove-notice-2)) "") (om::first-n remove-notice-2 (- (length remove-notice-2) 1)) remove-notice-2)))   
+       
+       (read-edited-code 
+              (om-py::py-list->string (list 
+                     (om-py::concatstring (mapcar (lambda (x) (om::string+ x (string #\Newline))) remove-all-non-lisp-text)))))
+       
+       (get-var-in-py-formatted (om-py::concatstring (om::flat (mapcar (lambda (x) (x-append x " ")) get-var-in-py))))
+       (variables-in-lisp   (if    (null get-var-in-py)
+                                   (om::x-append (om::string+ "(py_var " (write-to-string variables)) read-edited-code ")")
+                                   (om::x-append (om::string+ "(py_var ("  get-var-in-py-formatted ")" (string #\Newline)) read-edited-code ")"))))
+      variables-in-lisp)) 
         
 ;; ==============================================================================
 
