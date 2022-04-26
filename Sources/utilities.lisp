@@ -57,7 +57,6 @@
                                           (lambda () (let* ()
                                                             (sleep 2)                                      
                                                             (om::om-shell (om::string+ *activate-virtual-enviroment* " && python3 -m pip install om_py")))))))
-            ;#+mac (sleep 10)
                                     
 ;; pip always use venv
 
@@ -70,18 +69,23 @@
 
 ;===================================
 (defun save-temp-sounds (sounds &optional if-needed) 
+      "It save sounds in a temp folder using random numbers."
+
     (let* (
-            (first-action1 
-                (mapcar 
+            (first-action1 (mapcar 
                     (lambda (x) (om::string+ "Sound-" if-needed x))
                         (mapcar (lambda (x) (format nil "~6,'0D" x)) (om::arithm-ser 1 (length (om::list! sounds)) 1)))))
       
             (loop :for loop-sound :in (om::list! sounds)
                 :for loop-names :in first-action1
-                :collect (om:save-sound loop-sound (merge-pathnames "om-py/" (om::tmpfile (om::string+ loop-names ".wav")))))))
+                :collect (om:save-sound loop-sound (merge-pathnames "om-py/" (om::tmpfile (om::string+ loop-names ".wav"))))))) 
+                
+                ;; TODO add (get-pref-value :Audio :format)
 
 ;===================================
 (defun format2python-v3 (type)
+      "This is the function to format the lisp and OM code and classes to be used in Python."
+
     (case (type-of type)
         (lispworks:simple-text-string (if (null (probe-file type))
                                           (py-list->string (list type))
@@ -122,27 +126,31 @@
 ;; ================================================ PY CODE INSIDE OM ===========
 
 (om::defclass! python ()
-    ((code :initform nil :initarg :code :accessor code)))
+    ((code :initform nil :initarg :code :accessor code)
+    (:documentation "This class will have all the code created!")))
 
 ;; ================
 
 (om::defclass! py-externals-mod ()
-    ((modules :initform nil :initarg :modules :accessor modules)))
+    ((modules :initform nil :initarg :modules :accessor modules)
+    (:documentation "This class will have all the external modules used and maybe some functions used in the python class, all things that are used in your python code and could not be repeated.")))
 
 ;==================================== STOLEN FUNCTIONS =========================
 
-(defun get-file (filename)
-  (with-open-file (stream filename)
-    (loop for line = (read-line stream nil)
-          while line
-          collect line)))
+(defun read-python-script-lines (filename)
+      "Return the content of a file as a string."
+      (remove nil 
+            (with-open-file (stream filename)
+                  (loop for line = (read-line stream nil) 
+                        while line
+                        collect line))))
 
 ;https://stackoverflow.com/questions/12906738/common-lisp-print-on-one-line-return-single-line-counter-formatting
 
 ;====================================
 
 (defun char-by-char (string)
-
+      "Return a list of characters of a string (one by one)."
    (loop :for idex :from 0 :to (- (length string) 1)
          :collect 
          (string (aref string idex))))
@@ -161,23 +169,20 @@
 
 ;; https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-string
 
+;; ======================================================
 
-;===================================================================== Files control =====================================
+(defun list-depth (list)
+      "Returns the depth of a list."
+      (if (listp list)
+            (+ 1 (reduce #'max (mapcar #'list-depth list)
+                        :initial-value 0))
+                    0))
 
-(defun get-lisp-variables (pathname-of-code)
+;=====================================================================
 
-    (remove nil (loop :for lines :in (get-file pathname-of-code)
-                      :collect 
-                    (let* (
-                          (characters  (char-by-char lines))
-                          (is-py-var (equal (om-py::concatstring (om::first-n characters 8)) "#(py_var")))
-                          (if is-py-var
-                              (om-py::concatstring (cdr characters)))))))
-
-;===============================
 (defun remove-lisp-var (pathname-of-code)
 
-    (remove nil (loop :for lines :in (get-file pathname-of-code)
+    (remove nil (loop :for lines :in (read-python-script-lines pathname-of-code)
                       :collect 
                     (let* (
                           (characters  (char-by-char lines))
@@ -186,14 +191,6 @@
                               nil
                               lines))))) ;;  remove 
         
-
-;===============================
-(defun read-python-script-lines (pathname-of-code)
-
-    (remove nil (get-file pathname-of-code)))
-                
-
-
 ;===============================
 
 (defun remove-py-var (code var)
@@ -204,21 +201,12 @@
         (if (null cdr-var)
             remove-from-code
           (remove-py-var remove-from-code cdr-var))))
-
-;; ============
-
-(defun py-name-of-file (p)
-  (let ((path (and p (pathname p))))
-  (when (pathnamep path)
-    (om::string+ (pathname-name path) 
-             (if (and (pathname-type path) (stringp (pathname-type path)))
-                 (om::string+ "." (pathname-type path)) 
-               "")))))
                
 ;; ============
 
 (defun clear-all-temp-files ()
 
+"It removes all the temp files created by om-py inside the om-py folder."
 (let* ()
             (mp:process-run-function (om::string+ "Clear Temp Files " (write-to-string (om-random 1 1000)))
                  () 
@@ -238,21 +226,15 @@
 ;================================== WAIT PROCESS =================
 
 (defun loop-until-probe-file (my-file)
+
+"This function is used to wait until the file is created."
         (loop :with file = nil 
               :while (equal nil (setf file (probe-file my-file)))
         :collect file)
         
 (probe-file my-file))
 
-;==========================
-
-(defun loop-until-finish-process (mailbox)
-      (loop :with mailbox-empty = nil :while 
-            (setf mailbox-empty (remove nil (mapcar (lambda (x) (mp:mailbox-empty-p x)) mailbox)))
-            :do (let* ()
-            mailbox-empty)))
-
-;================================== WAIT PROCESS =================
+;================================================================
 
 (defun read_from_python (x) 
     (om::flat (loop :for y :in (om::list! x) :collect 
@@ -261,10 +243,11 @@
                                     (read-from-string y)
                                     y)) 1))
 
-
 ; ================================= Import modules functions ======================
 
 (defun pip-install (name)
+
+"It installs a module in the python environment."
 
   (let* ((y-grid 24)
          (win (om::om-make-window 'om::om-dialog :position :centered
@@ -308,25 +291,21 @@
 
     (om::om-modal-dialog win)))
 
-;; ======================================================
-
-(defun list-depth (list)
-                (if (listp list)
-                    (+ 1 (reduce #'max (mapcar #'list-depth list)
-                                 :initial-value 0))
-                    0))
-
 ; =======================================================
 ; Functions to be used in the patches METHODS
 ; =======================================================
 
 (defun start-python-print-server ()
+"It starts the python print server it must be used with om_print() function in om_py module."
+
 (om::om-start-udp-server 1995 "127.0.0.1" 
             (lambda (msg) (let () (let* () (om::om-print (om::string+ (write-to-string (car (cdr (om::osc-decode msg)))) (string #\Newline)) "Python")  nil)))))
 
 ; =======================================================
 
 (defun stop-python-print-server ()
+"It stops the python print server initalized by start-python-print-server."
+
 (loop :for udp-server :in om::*running-udp-servers*
                   :do (if (equal (mp:process-name (third udp-server)) "UDP receive server on \"127.0.0.1\" 1995")
                   (let* () (om::om-stop-udp-server (third udp-server))))))
@@ -335,9 +314,9 @@
 
 (defmethod! run-py ((code python) &key (cabecario nil) (remove-tmpfile t))
 :initvals '(nil)
-:indoc '("run py") 
+:indoc '("Python Class" "Here you connect the box py-code with all the modules that will be used, global variables, functions, etc." "Remove the script after execution.") 
 :icon 'py-f
-:doc "With this object you can see the index parameters of some VST2 plugin."
+:doc "This object will run python scripts inside the py and py-code special-boxes. "
 
 
 (if om::*vscode-is-open?* 
@@ -369,7 +348,7 @@
 ;; ========================
 
 (defmethod! py-add-var ((function function) &rest rest)
-:initvals '(nil)
+:initvals '("Py-code function in lambda mode" "all the variables used.")
 :indoc '("run py") 
 :icon 'py-f
 :doc ""
@@ -382,7 +361,7 @@
 ;; ========================
 
 (defmethod! py-concat-code ((codes list))
-:initvals '(nil)
+:initvals '("It concat a list of python classes.")
 :indoc '("run py") 
 :icon 'py-f
 :doc ""
@@ -397,17 +376,17 @@
 :initvals '(nil)
 :indoc '("run py") 
 :icon 'py-f
-:doc ""
+:doc "It works like x-append with key inputs for python classes."
 
 (py-concat-code (flat (om::x-append rest nil nil))))
 
 ;; ========================
 
 (defmethod! py-remove-ext-modules ((string string))
-:initvals '(nil)
+:initvals '("The name of external module to be removed.")
 :indoc '("run py") 
 :icon 'py-f
-:doc ""
+:doc "This object will remove the external modules from the python environment."
 
 (om-cmd-line (format nil "~d && pip uninstall -y ~d" om-py::*activate-virtual-enviroment*  string)))
 
@@ -418,10 +397,9 @@
 :initvals '("math" ("math" "sum") "math")
 :indoc '("import YOURMODULE" "from YOURMODULE import YOURFUNCTION" "import YOURMODULE*") 
 :icon 'py-f
-:doc ""
+:doc "This object will add external modules to the python environment."
 
 ;; COLOCAR UM MODO DE SEMPRE RODAR O PIP UPGRADE PIP
-
 
 (if   
       (or (= 2 (list-depth from_import)) (null from_import))
@@ -483,68 +461,52 @@ from om_py import to_om" format-import format-from_import format_import*))))
       (om::make-value 'py-externals-mod (list (list :modules all-modules))))))
 
 ;==================================
-
-(defmethod! py-mk-list ((list list))
-:initvals '(nil)
-:indoc '("run py") 
-:icon 'py-f
-:doc ""
-
-(lisp-list_2_python-list list))
-
-
-;==================================
 (defmethod! py-open-script ((python string))
-
 (py-open-script (probe-file python)))
 
+; =================================
 
 (defmethod! py-open-script ((python pathname))
 :initvals '(nil)
-:indoc '("Python class") 
+:indoc '("The pathname of the python script to be opened.") 
 :icon 'py-f
-:doc ""
+:doc "This object will open python scripts in the VsCode editor (When it is installed)."
 
 (oa::om-command-line (om::string+ "code " (namestring python) " -w") nil))
-
 
 ;==================================
 
 (defmethod! py->text ((python python))
-:initvals '(nil)
+:initvals '("Some python class.")
 :indoc '("Python class") 
 :icon 'py-f
-:doc ""
+:doc "It convert python class to textbuffer class so see the code before running it."
 
 (om::make-value 'om::textbuffer (list (list :contents (code python)))))
 
-
-;==================================
-
-(defun lista-de-que? (x)
-
-(remove-dup (loop :for class :in x :collect (type-of class)) 'eq 1))
-
-
 ;================================== CHECK OM-PY UPDATE ============================
 
-(defparameter *this-version* 0.1)
+(defparameter *this-version* 0.2)
 
-(let* (
-      (tmpfile (om::tmpfile "om-sharp-version.txt"))
-      (cmd-command
-            #+windows(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --ssl-no-revoke --output  ~d" (namestring tmpfile)) nil)
-            #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
-            #+linux(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)))
-      (eval (read-from-string (car (uiop:read-file-lines tmpfile))))
-      (print *actual-version*)
-      
-      (if (> *actual-version* *this-version*)
-          (let* (
-                
-                 (update? (om::om-y-or-n-dialog (format nil "The library has been UPDATED to version ~d. Want to update now?" (write-to-string *actual-version*)))))   
-            (if update?
-                    (let* ()
-                          (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))))
-      (alexandria::delete-file tmpfile))
-               
+(mp:process-run-function "Check for om-py updates!"
+      () 
+            (lambda ()
+
+                  (if (and (om::get-pref-value :externals :check-updates) (not (om::loaded? (om::find-library "OM-py"))))
+                        (let* (
+                              (tmpfile (om::tmpfile "om-py-version.txt"))
+                              (cmd-command
+                                    #+windows(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --ssl-no-revoke --output  ~d" (namestring tmpfile)) nil)
+                                    #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
+                                    #+linux(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)))
+                              (sleep 3)
+                              (eval (read-from-string (car (uiop:read-file-lines tmpfile))))     
+                              (if (> *actual-version* *this-version*)
+                              (let* (
+                                    
+                                    (update? (om::om-y-or-n-dialog (format nil "The library om-py has been UPDATED to version ~d. Want to update now?" (write-to-string *actual-version*)))))   
+                                    (if update?
+                                          (let* ()
+                                                (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))))
+                              (alexandria::delete-file tmpfile)))))
+                              
