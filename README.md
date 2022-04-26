@@ -1,6 +1,10 @@
 # OM-py 
 
-*For the library work probally read the **Install Python** topic.*
+OM-py bring python to visual enviroment. For this library work probally you need to download it, and then read the topics in this documentation:
+
+* Install OM-Sharp;
+* Install OM Libraries;
+* Install Python.
 
 ## [Download](https://bit.ly/3v20gVe)
 
