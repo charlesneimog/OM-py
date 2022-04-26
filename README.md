@@ -99,6 +99,7 @@ At the bottom of the page, you will see the **Windows installer (64-bit)**.
 ![Path Variables](https://github.com/charlesneimog/OM-py/blob/master/Documentation/Add%20Python%20to%20Path%20variables.png)
 
 * Click in **Close**. 
+* Finally load om-py from OM-Sharp, *the first load will download some things. The could take some time*
 
 To make sure that all things are working:
 * Open OM-Sharp
@@ -117,13 +118,7 @@ In Linux the process is a little more simple!
 * If you have no python in your machine (improbable) type `sudo apt install python3.8` 
 * Then install pip typing, `sudo apt-get -y install python3-pip`
 * Install Virtual Env: `sudo apt install python3.8-venv`
-* Then create the om-py Virtual Env: `python3.8 -m venv YOUR_OM_TEMP_FOLDER/Python`
-
-![Tmp Files](https://github.com/charlesneimog/OM-py/blob/master/Documentation/tmp-file%20example.png)
-
-
-In my case: `python3.8 -m venv /home/neimog/Documents/OM#/temp-files/Python`.
-
+* Finnaly, load the `om-py` library, *the first load will download some things. The could take some time*.
 To make sure that all things are working:
 * Open OM-Sharp
 * Load om-py;
@@ -134,7 +129,7 @@ To make sure that all things are working:
 ### MacOS
 
 * Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
-* Load om-py Library in OM-Sharp, the first load will download some things. The could take some time.
+* Load om-py Library in OM-Sharp, *the first load will download some things. The could take some time*.
 * To open python scripts in vscode you need: 
 	* Download, Install and Open vscode.
 	* Open command palette. (`shift + command + p`)
