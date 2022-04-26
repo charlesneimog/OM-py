@@ -1,5 +1,11 @@
 # OM-py 
 
+OM-py bring python to visual enviroment. For this library work probally you need to download it, and then read the topics in this documentation:
+
+* Install OM-Sharp;
+* Install OM Libraries;
+* Install Python.
+
 ## [Download](https://bit.ly/3v20gVe)
 
 
@@ -33,7 +39,7 @@ With `my_om_number` inside py_var it will open and input in the `py` box.
 
 -----------------------------------------------------
 
-OM-py work with vscode too. For that select `py` or `py-code` box and press `c`.
+OM-py work with vscode too. For that select `py` or `py-code` box and press `z`. If the key is added to some function in OM-Sharp, I will need to change it.
 
 <img src="https://user-images.githubusercontent.com/31707161/154815586-2ecb119a-fa45-4de2-9817-1d0e477f49c1.gif" width=100% height=100%>
 
@@ -127,5 +133,12 @@ To make sure that all things are working:
 
 ### MacOS
 
-Coming soon!! I need a MacOS computer!
+* Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
+* Load om-py Library in OM-Sharp, the first load will download somethings. The could took some time.
+* To open python scripts in vscode you need: 
+	* Download, Install and Open Vscode.
+	* Open command palette. (`shift + command + p`)
+	* Look for `Install code command in PATH`.
+	* Press `ENTER`.
+	* If this do not work read this https://code.visualstudio.com/docs/setup/mac.
 
