@@ -126,14 +126,19 @@
 ;; ================================================ PY CODE INSIDE OM ===========
 
 (om::defclass! python ()
-    ((code :initform nil :initarg :code :accessor code)
-    (:documentation "This class will have all the code created!")))
+
+    ((code :initform nil :initarg :code :accessor code))
+    (:documentation "This class will have all the code created!"))
+
+;(:documentation "This class will have all the code created!")
 
 ;; ================
 
 (om::defclass! py-externals-mod ()
-    ((modules :initform nil :initarg :modules :accessor modules)
-    (:documentation "This class will have all the external modules used and maybe some functions used in the python class, all things that are used in your python code and could not be repeated.")))
+    ((modules :initform nil :initarg :modules :accessor modules))
+    (:documentation "This class will have all the external modules used and maybe some functions used in the python class, all things that are used in your python code and could not be repeated."))
+
+
 
 ;==================================== STOLEN FUNCTIONS =========================
 
