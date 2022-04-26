@@ -16,7 +16,7 @@
       (file-exits? (probe-file (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "om-py"))))))
       (setf *first-time-load* file-exits?)
       (if file-exits? 
-            (alexandria::delete-file file-exits?)))
+            (delete-file file-exits?)))
 
 ; ================================= VIRTUAL ENV =================================================================
                               
@@ -29,8 +29,6 @@
 (if *first-time-load*
       (let* ()
             ; "Check if it is the first time of the load!"
-
-            (om::save-as-text '(((defvar *first-time-load* nil))) (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py"))))
             (print "Installing venv!")
             (oa::om-command-line 
                         #+mac "python3 -m pip install virtualenv"
