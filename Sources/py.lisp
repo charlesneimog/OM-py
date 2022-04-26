@@ -453,7 +453,7 @@ to_om(list_of_numbers)
   (:default-initargs :icon :py-script)
   (:metaclass omstandardclass))
 
-(add-om-doctype :textfun "py" "Python Script")
+(add-om-doctype :pyfun "py" "Python Script")
 
 (defmethod object-doctype ((self run-py-f)) :textfun)
 
