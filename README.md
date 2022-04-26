@@ -127,12 +127,12 @@ To make sure that all things are working:
 
 ### MacOS
 
-1. Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
-2. Load om-py Library in OM-Sharp, the first load will download somethings. The could took some time.
-3. To open python scripts in vscode you need: 
-				3.1. Download, Install and Open Vscode.
-				3.2. Open command palette. (`shift + command + p`)
-	      3.3. Look for `Install code command in PATH`.
-	      3.4. Press `ENTER`.
-        3.5. If this do not work read this https://code.visualstudio.com/docs/setup/mac.
+* Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
+* Load om-py Library in OM-Sharp, the first load will download somethings. The could took some time.
+* To open python scripts in vscode you need: 
+	* Download, Install and Open Vscode.
+	* Open command palette. (`shift + command + p`)
+	* Look for `Install code command in PATH`.
+	* Press `ENTER`.
+	* If this do not work read this https://code.visualstudio.com/docs/setup/mac.
 
