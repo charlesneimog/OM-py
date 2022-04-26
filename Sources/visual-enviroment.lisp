@@ -1,6 +1,8 @@
 (in-package :om)
 
 ;; ==========================================================================
+;; =================== INTEGRATION WITH VSCODE ==============================
+;; ==========================================================================
 
 (defparameter *vscode-is-open?* nil)
 
@@ -94,11 +96,13 @@
        (om-py::clear-the-file path)
        (om::om-print "Closing VScode!" "OM-Py")))
 
-;; ========================================================================================
+;; ==========================================================================
+;; ================== AUTO-COMPLETATION AND SHORTCUT Z ======================
+;; ==========================================================================
 
 (defun list-search-py-contents (path)
-  (and path
-       (om-directory path
+       (and path
+              (om-directory path
                      :files t :directories nil
                      :type '("py")
                      :recursive (get-pref-value :files :search-path-rec))))
@@ -109,14 +113,14 @@
   (if (and *om-box-name-completion* (>= (length string) 1))
       (let* (
              (searchpath-strings (mapcar 'pathname-name
-                                         (append (list-search-py-contents (get-pref-value :externals :py-scripts))))))
+                                                 (append (list-search-py-contents (get-pref-value :externals :py-scripts))))))
         (remove-if #'(lambda (str) (not (equal 0 (search string str :test 'string-equal)))) (append searchpath-strings)))))
 
 ;; ========================================================================================
 
 (defmethod new-python-box-in-patch-editor ((self patch-editor-view) str position)
        (let* ((patch (find-persistant-container (object (editor self))))
-              (new-box (omNG-make-special-box 'py position (list (read-from-string str)))))
+              (new-box (omNG-make-special-box 'py position (list str))))
               (when new-box
                      (store-current-state-for-undo (editor self))
                      (add-box-in-patch-editor new-box self))))
@@ -127,26 +131,26 @@
   (let* ((patch (object (editor self)))
          (prompt "py script name")
          (completion-fun (if (equal type :py)
-                             #'(lambda (string) (unless (string-equal string prompt)
-                                                  (py-script-completion patch string)))
+                             (lambda (string) (unless (string-equal string prompt)
+                                                        (py-script-completion patch string)))
                            'box-name-completion))
-         (verbose (print completion-fun))
+         ;(verbose (print completion-fun))
          (textinput
               (om-make-di 'text-input-item
-                     :text (print prompt)
+                     :text prompt
                      :fg-color (om-def-color :gray)
                      :di-action #'(lambda (item)
-                                     (let ((text (om-dialog-item-text item)))
-                                       (om-end-text-edit item)
-                                       (om-remove-subviews self item)
-                                       (unless (string-equal text prompt)
-                                                 (if (equal type :py)
-                                                        (new-python-box-in-patch-editor self text position)
-                                                        (let* ()
-                                                               (om::om-print "I do not know what you want to do!" "om-py")
-                                                               (om::abort-eval))))                                                                            
-                                       (om-set-focus self)))
-
+                                     (let (
+                                                 (text (om-dialog-item-text item)))
+                                                 (om-end-text-edit item)
+                                                 (om-remove-subviews self item)
+                                                        (unless (string-equal text prompt)
+                                                               (if (equal type :py)
+                                                                      (new-python-box-in-patch-editor self text position)
+                                                                      (let* ()
+                                                                             (om::om-print "I do not know what you want to do!" "om-py")
+                                                                             (om::abort-eval))))                                                                            
+                                                 (om-set-focus self)))
                                             
                      :begin-edit-action #'(lambda (item)
                                              (om-set-fg-color item (om-def-color :dark-gray)))
@@ -172,10 +176,8 @@
 
 (defmethod make-new-py-box ((self patch-editor-view))
   (let ((mp (om-mouse-position self)))
-    (enter-new-py-script self (if (om-point-in-rect-p mp 0 0 (w self) (h self))
-                            mp (om-make-point (round (w self) 2) (round (h self) 2)))
-                   :py)
-    ))
+    (enter-new-py-script self (if (om-point-in-rect-p mp 0 0 (w self) (h self)) mp (om-make-point (round (w self) 2) (round (h self) 2)))
+                   :py)))
 
 ;; ========================================================================================
 
@@ -371,7 +373,8 @@
               ; if nothing is selected, then new py-script
 
               (unless (edit-lock editor)
-                     (make-new-py-box panel))))
+                            ;(print panel)
+                            (make-new-py-box panel))))
         
        ; ======================================== 
        ; ========== OM-PY =======================

@@ -1,1 +1,1 @@
-(defvar *first-time-load* nil) 
+(defvar *first-time-load* t) 

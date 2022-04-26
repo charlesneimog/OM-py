@@ -371,7 +371,7 @@ to_om(list_of_numbers)
 (defmethod omNG-make-special-box ((reference (eql 'py)) pos &optional init-args)
   
   (let* (
-        (py-script-name (if (null (car (list! init-args))) " new-py-script " (write-to-string (car (list! init-args)))))
+        (py-script-name (if (null (car (list! init-args))) " new-py-script " (car (list! init-args))))
         (adapt-window (if (> (length py-script-name) 14)
                           py-script-name
                           (let* (

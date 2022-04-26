@@ -15,7 +15,8 @@
 (let* (
       (file-exits? (probe-file (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "om-py"))))))
       (setf *first-time-load* file-exits?)
-      (alexandria::delete-file file-exits?))
+      (if file-exits? 
+            (alexandria::delete-file file-exits?)))
 
 ; ================================= VIRTUAL ENV =================================================================
                               
@@ -38,7 +39,6 @@
                                                                   t)
                   ;; Pip create env 
             
-            
             (oa::om-command-line 
                   #+mac  (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))
                   #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
@@ -50,7 +50,7 @@
             (if (equal (software-type) "Darwin")
                   
                   (let* ()
-                  (print "I am on MacOS!!")
+                  ;(print "I am on MacOS!!")
 
                   (mp:process-run-function "Install OM_py!"
                                    () 
