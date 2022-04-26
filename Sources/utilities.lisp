@@ -10,15 +10,12 @@
 
 ;https://stackoverflow.com/questions/5457346/lisp-function-to-concatenate-a-list-of-strings
 
-(eval (om::flat 
-                  (om::get-slot-val 
-                     (let
-                         (
-                              (tb
-                                    (om::make-value-from-model 'textbuffer 
-                                         (probe-file (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "OM-py")))) nil)))
-                              (setf (om::reader tb) :lines-cols) tb) "CONTENTS")))
-                              
+; ================================= FIRST LOAD?? ================================================================
+
+(let* (
+      (file-exits? (probe-file (merge-pathnames "first-load.txt" (om::lib-resources-folder (om::find-library "om-py"))))))
+      (setf *first-time-load* file-exits?)
+      (alexandria::delete-file file-exits?))
 
 ; ================================= VIRTUAL ENV =================================================================
                               
@@ -45,10 +42,11 @@
             (oa::om-command-line 
                   #+mac  (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))
                   #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
-                  #+linux (om::string+ "python3.8 -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))    
-                                             
+                  #+linux (om::string+ "python3.8 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))                                          
                                               t)
             
+            (sleep 5)
+
             (if (equal (software-type) "Darwin")
                   
                   (let* ()
@@ -507,7 +505,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 (defparameter *this-version* 0.2)
 
-(mp:process-run-function "Check for om-py updates!"
+(ignore-errors (mp:process-run-function "Check for om-py updates!"
       () 
             (lambda ()
 
@@ -517,9 +515,16 @@ from om_py import to_om" format-import format-from_import format_import*))))
                               (cmd-command
                                     #+windows(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --ssl-no-revoke --output  ~d" (namestring tmpfile)) nil)
                                     #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
-                                    #+linux(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)))
-                              (sleep 3)
-                              (eval (read-from-string (car (uiop:read-file-lines tmpfile))))     
+                                    #+linux
+                                          (let* ()
+                                                (oa::om-command-line "sudo apt install curl -S ")
+                                                (oa::om-command-line 
+                                                      (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil))))
+                              
+                              (if (not (equal cmd-command 0)) 
+                                    (setf *actual-version* 0)                            
+                                    (eval (read-from-string (car (uiop:read-file-lines tmpfile)))))    
+                              
                               (if (> *actual-version* *this-version*)
                               (let* (
                                     
@@ -527,5 +532,5 @@ from om_py import to_om" format-import format-from_import format_import*))))
                                     (if update?
                                           (let* ()
                                                 (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))))
-                              (alexandria::delete-file tmpfile)))))
+                              (alexandria::delete-file tmpfile))))))
                               
