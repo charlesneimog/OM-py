@@ -27,7 +27,7 @@
 ; =================================
 ;; Pip install venv if first load
 (if *first-time-load*
-      (let* ()
+      (progn
             ; "Check if it is the first time of the load!"
             (print "Installing venv!")
             (oa::om-command-line 
@@ -47,12 +47,12 @@
 
             (if (equal (software-type) "Darwin")
                   
-                  (let* ()
+                  (progn
                   ;(print "I am on MacOS!!")
 
                   (mp:process-run-function "Install OM_py!"
                                    () 
-                                          (lambda () (let* ()
+                                          (lambda () (progn
                                                             (sleep 2)                                      
                                                             (om::om-shell (om::string+ *activate-virtual-enviroment* " && python3 -m pip install om_py")))))))
                                     
@@ -222,7 +222,7 @@
 (defun clear-all-temp-files ()
 
 "It removes all the temp files created by om-py inside the om-py folder."
-(let* ()
+(progn
             (mp:process-run-function (om::string+ "Clear Temp Files " (write-to-string (om-random 1 1000)))
                  () 
                         (lambda () (oa::om-delete-directory (merge-pathnames "om-py/" (tmpfile ""))) nil))
@@ -314,7 +314,9 @@
 "It starts the python print server it must be used with om_print() function in om_py module."
 
 (om::om-start-udp-server 1995 "127.0.0.1" 
-            (lambda (msg) (let () (let* () (om::om-print (om::string+ (write-to-string (car (cdr (om::osc-decode msg)))) (string #\Newline)) "Python")  nil)))))
+            (lambda (msg) (progn 
+                              (om::om-print (om::string+ (write-to-string (car (cdr (om::osc-decode msg)))) (string #\Newline)) "Python")  
+                              nil))))
 
 ; =======================================================
 
@@ -323,7 +325,7 @@
 
 (loop :for udp-server :in om::*running-udp-servers*
                   :do (if (equal (mp:process-name (third udp-server)) "UDP receive server on \"127.0.0.1\" 1995")
-                  (let* () (om::om-stop-udp-server (third udp-server))))))
+                        (om::om-stop-udp-server (third udp-server)))))
 
 ; =======================================================
 
@@ -333,9 +335,10 @@
 :icon 'py-f
 :doc "This object will run python scripts inside the py and py-code special-boxes. "
 
-
 (if om::*vscode-is-open?* 
-    (let () (om::om-message-dialog "You need to close VScode First to update the code!") (om::abort-eval))) ;; MAKE A DIALOG
+    (progn 
+            (om::om-message-dialog "You need to close VScode First to update the code!") 
+            (om::abort-eval))) ;; MAKE A DIALOG
 
 ; ================= PYTHON PRINT ON OM ==========================================
 (start-python-print-server)
@@ -358,7 +361,7 @@
             (stop-python-print-server)
             (read_from_python (if   (null data)        
                                             nil
-                                           (om::get-slot-val (let () (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
+                                           (om::get-slot-val (progn (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
                      
 ;; ========================
 
@@ -419,9 +422,9 @@
 (if   
       (or (= 2 (list-depth from_import)) (null from_import))
             from_import
-            (let* ()
-            (om::om-message-dialog (format nil "The from_import key seems to be inappropriately formatted!"))
-            (om::abort-eval)))
+            (progn
+                  (om::om-message-dialog (format nil "The from_import key seems to be inappropriately formatted!"))
+                  (om::abort-eval)))
 
 (let* (
       (import-modules (om::x-append 
@@ -459,7 +462,7 @@ from om_py import to_om
                                           (nil (om::abort-eval)))))
                                     (if 
                                           (equal install_modules 1) 
-                                          (let* () 
+                                          (progn 
                                                       (om::om-message-dialog (format nil "The module ~d was not found, check the spelling!" not_installed))
                                                       (om::abort-eval)))))
       (let* (
@@ -526,7 +529,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
                                     #+windows(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --ssl-no-revoke --output  ~d" (namestring tmpfile)) nil)
                                     #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
                                     #+linux
-                                          (let* ()
+                                          (progn
                                                 (oa::om-command-line "sudo apt install curl -S ")
                                                 (oa::om-command-line 
                                                       (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil))))
@@ -540,7 +543,6 @@ from om_py import to_om" format-import format-from_import format_import*))))
                                     
                                     (update? (om::om-y-or-n-dialog (format nil "The library om-py has been UPDATED to version ~d. Want to update now?" (write-to-string *actual-version*)))))   
                                     (if update?
-                                          (let* ()
-                                                (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))))
-                              (alexandria::delete-file tmpfile))))))
+                                          (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))
+                              (alexandria::delete-file tmpfile)))))))
                               
