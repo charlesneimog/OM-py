@@ -499,6 +499,18 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 (om::make-value 'om::textbuffer (list (list :contents (code python)))))
 
+
+;==================================
+
+(defmethod! text->py ((python string))
+:initvals '("Some python class.")
+:indoc '("Python class") 
+:icon 'py-f
+:doc "It convert string to a python class to make possible run it with the run-py object."
+
+
+(om::make-value 'python (list (list :code python))))
+
 ;================================== CHECK OM-PY UPDATE ============================
 
 (defparameter *this-version* 0.2)

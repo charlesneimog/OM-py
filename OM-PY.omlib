@@ -14,6 +14,6 @@
       )
 
 (:symbols 
-      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-modules" "om-py::py-remove-ext-modules" "om-py::py-concat-code" "om-py::py-append-code" "om-py::py->text" "om-py::py-open-script")
+      (:functions "om-py::run-py" "om-py::py-add-var" "om-py::py-add-ext-modules" "om-py::py-remove-ext-modules" "om-py::py-concat-code" "om-py::py-append-code" "om-py::py->text" "om-py::text->py" "om-py::py-open-script")
       (:class "om-py::python")
       (:special-items py py-code)))
