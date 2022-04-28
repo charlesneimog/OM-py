@@ -24,7 +24,7 @@
 ; ======================= OM-SHARP Preferences ==================================
 
 (if (equal *app-name* "om-sharp")
-  (let* ()
+  (progn
           (add-preference-section :externals "OM-py" nil '(:py-enviroment :py-scripts :check-updates))
           (add-preference :externals :py-enviroment "Python Enviroment" :path nil)
           (add-preference :externals :py-scripts "Python Scripts" :folder (merge-pathnames "Py-Scripts/" (lib-resources-folder (find-library "OM-py"))))

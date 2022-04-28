@@ -147,7 +147,7 @@
                                                         (unless (string-equal text prompt)
                                                                (if (equal type :py)
                                                                       (new-python-box-in-patch-editor self text position)
-                                                                      (let* ()
+                                                                      (progn
                                                                              (om::om-print "I do not know what you want to do!" "om-py")
                                                                              (om::abort-eval))))                                                                            
                                                  (om-set-focus self)))
@@ -365,7 +365,7 @@
 
               ; if omboxpy or OMBox-run-py is selected, then open the VS-code
               
-              (let* ()
+              (progn
                      (om::om-print "Opening VScode!" "OM-Py")
                      (defparameter *vscode-opened* t)
                      (open-vscode selected-boxes))
@@ -385,7 +385,7 @@
 ;; ====================================================================================================
 
 (if (> 1.6 (read-from-string *version-string*))
-       (let* ()
+       (progn
               (om-beep-msg "OM-Sharp is out of date. Please update to the latest version.")))
 
 ; ====================================================================================================
