@@ -518,10 +518,9 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 (defparameter *this-version* 0.2)
 
-(ignore-errors (mp:process-run-function "Check for om-py updates!"
-      () 
+(ignore-errors 
+      (mp:process-run-function "Check for om-py updates!" () 
             (lambda ()
-
                   (if (and (om::get-pref-value :externals :check-updates) (not (om::loaded? (om::find-library "OM-py"))))
                         (let* (
                               (tmpfile (om::tmpfile "om-py-version.txt"))
