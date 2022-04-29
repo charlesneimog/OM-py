@@ -530,9 +530,9 @@ from om_py import to_om" format-import format-from_import format_import*))))
                                     #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
                                     #+linux
                                           (progn
-                                                (oa::om-command-line "sudo apt install curl -S ")
+                                                
                                                 (oa::om-command-line 
-                                                      (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil))))
+                                                      (format nil "wget https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --O ~d" (namestring tmpfile)) nil))))
                               
                               (if (not (equal cmd-command 0)) 
                                     (setf *actual-version* 0)                            
