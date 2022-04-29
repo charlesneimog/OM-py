@@ -528,21 +528,17 @@ from om_py import to_om" format-import format-from_import format_import*))))
                               (cmd-command
                                     #+windows(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --ssl-no-revoke --output  ~d" (namestring tmpfile)) nil)
                                     #+mac(oa::om-command-line (format nil "curl https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp -L --output ~d" (namestring tmpfile)) nil)
-                                    #+linux
-                                          (progn
-                                                
-                                                (oa::om-command-line 
-                                                      (format nil "wget https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --O ~d" (namestring tmpfile)) nil))))
+                                    #+linux (oa::om-command-line (format nil "wget https://raw.githubusercontent.com/charlesneimog/om-py/master/resources/version.lisp --O ~d" (namestring tmpfile)) nil)))
                               
                               (if (not (equal cmd-command 0)) 
                                     (setf *actual-version* 0)                            
                                     (eval (read-from-string (car (uiop:read-file-lines tmpfile)))))    
                               
                               (if (> *actual-version* *this-version*)
-                              (let* (
+                                    (let* (
                                     
-                                    (update? (om::om-y-or-n-dialog (format nil "The library om-py has been UPDATED to version ~d. Want to update now?" (write-to-string *actual-version*)))))   
-                                    (if update?
-                                          (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))
-                              (alexandria::delete-file tmpfile)))))))
+                                          (update? (om::om-y-or-n-dialog (format nil "The library om-py has been UPDATED to version ~d. Want to update now?" (write-to-string *actual-version*)))))   
+                                          (if update?
+                                                (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))
+                                                      (alexandria::delete-file tmpfile)))))))
                               
