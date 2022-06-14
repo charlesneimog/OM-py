@@ -129,6 +129,7 @@ To make sure that all things are working:
 ### MacOS
 
 * Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
+* On Mac Terminal, run `python3 -m pip install virtualenv`.
 * Load om-py Library in OM-Sharp, *the first load will download some things. The could take some time*.
 * To open python scripts in vscode you need: 
 	* Download, Install and Open vscode.
