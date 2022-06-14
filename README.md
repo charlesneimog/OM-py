@@ -130,7 +130,7 @@ To make sure that all things are working:
 
 * Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
 * On Mac Terminal, run `python3 -m pip install virtualenv`.
-* Go to Help -> Help Patches -> OM-py -> for-mac!! Then run the TextBuffer and execute (on Mac terminal) these two lines of code.
+* Go to `Help -> Help Patches -> OM-py -> for-mac`!! Then run the TextBuffer and execute (on Mac terminal) these two lines of code.
 * Load om-py Library in OM-Sharp, *the first load will download some things. The could take some time*.
 * To open python scripts in vscode you need: 
 	* Download, Install and Open vscode.
