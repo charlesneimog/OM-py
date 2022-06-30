@@ -1,12 +1,12 @@
 # OM-py 
 
-OM-py bring python to visual enviroment. For this library work probally you need to download it, and then read the topics in this documentation:
+OM-py bring python to visual enviroment. For this library work properly you need to download it, and then read the topics in this documentation:
 
 * Install OM-Sharp;
 * Install OM Libraries;
-* Install Python.
+* Install Python (see your plataform).
 
-## [Download](https://bit.ly/3v20gVe)
+## [Download](https://bit.ly/3xYSkWt)
 
 
 OM-py is a bridge between Python and OM environments. What it does is format some types of data that are differently represented. For example, one list of numbers in OM is represented by `(1 2 3 4 5)`. In Python, the same list is represented by `[1, 2, 3, 4, 5]`. Sounds inside OM are represented by a class, for example, `#<sound 23186913>`. To send this `#<sound 23186913>` to Python, we need to save it in a temp folder and then give it to Python by a `pathname`.
@@ -129,6 +129,8 @@ To make sure that all things are working:
 ### MacOS
 
 * Install Python from https://www.python.org/downloads/release/python-399/! Maybe it is already installed!
+* On Mac Terminal, run `python3 -m pip install virtualenv`.
+* Go to `Help -> Help Patches -> OM-py -> for-mac`!! Open the patch and then run the TextBuffer and execute (on Mac terminal) these two lines of code.
 * Load om-py Library in OM-Sharp, *the first load will download some things. The could take some time*.
 * To open python scripts in vscode you need: 
 	* Download, Install and Open vscode.
