@@ -2,6 +2,8 @@
 (in-package :om-py)
 
 
+(setf om_py-threading_work nil)
+
 ; ==================================
 (defun py-list->string (ckn-list)
   (when ckn-list
@@ -341,7 +343,8 @@
             (om::abort-eval))) ;; MAKE A DIALOG
 
 ; ================= PYTHON PRINT ON OM ==========================================
-(start-python-print-server)
+(if (not om_py-threading_work) 
+(start-python-print-server))
 ; ================= PYTHON PRINT ON OM ==========================================
 
 (let* (
