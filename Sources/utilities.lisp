@@ -35,14 +35,14 @@
             (oa::om-command-line 
                         #+mac "python3 -m pip install virtualenv"
                         #+windows "pip install virtualenv"
-                        #+linux "sudo apt install python3.8-venv -S"
+                        #+linux "sudo apt install python3 venv -S"
                                                                   t)
                   ;; Pip create env 
             
             (oa::om-command-line 
                   #+mac  (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))
                   #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
-                  #+linux (om::string+ "python3.8 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))                                          
+                  #+linux (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))                                          
                                               t)
             
             (sleep 5)
@@ -355,7 +355,7 @@
       (where-i-am-running 
                               #+mac (om::string+ *activate-virtual-enviroment* " && python3 ")
                               #+windows (om::string+ *activate-virtual-enviroment* " && python ")
-                              #+linux (om::string+ *activate-virtual-enviroment* " && python3.8 ")))
+                              #+linux (om::string+ *activate-virtual-enviroment* " && python3 ")))
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
