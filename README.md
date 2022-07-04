@@ -115,9 +115,9 @@ If you heard a sound probably, it is working!! If not, please let me know!
 
 In Linux the process is a little more simple!
 * Open the terminal;
-* If you have no python in your machine (improbable) type `sudo apt install python3.8` 
+* If you have no python in your machine (improbable) type `sudo apt install python3` 
 * Then install pip typing, `sudo apt-get -y install python3-pip`
-* Install Virtual Env: `sudo apt install python3.8-venv`
+* Install Virtual Env: `sudo apt install python3-venv`
 * Finnaly, load the `om-py` library, *the first load will download some things. The could take some time*.
 To make sure that all things are working:
 * Open OM-Sharp
