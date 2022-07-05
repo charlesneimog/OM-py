@@ -211,6 +211,8 @@
 ;===============================
 
 (defun remove-py-var (code var)
+"It removes the variables between comment in the begin of the python code."
+
   (let* (
         (var-1 (first var))
         (remove-from-code (remove nil (mapcar (lambda (x) (if (null (search var-1 x)) x)) code)))
@@ -339,8 +341,8 @@
 
 (if om::*vscode-is-open?* 
     (progn 
-            (om::om-message-dialog "You need to close VScode First to update the code!") 
-            (om::abort-eval))) ;; MAKE A DIALOG
+            (om::om-message-dialog "You need to close VScode First to update the code!")   ;; MAKE A DIALOG
+            (om::abort-eval)))
 
 ; ================= PYTHON PRINT ON OM ==========================================
 (if (not om_py-threading_work) 
