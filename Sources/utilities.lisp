@@ -87,25 +87,37 @@
       "This is the function to format the lisp and OM code and classes to be used in Python."
 
     (case (type-of type)
-        (lispworks:simple-text-string (if (null (probe-file type))
+            (lispworks:simple-text-string (if (null (probe-file type))
                                           (py-list->string (list type))
                                           (py-list->string (list (namestring type)))))
-        (sound (let* (
+            (sound (let* (
                       (filepathname (namestring (car (if (not (om::file-pathname type)) 
                                                          (om::list! (save-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
                                                          (om::list! (om::file-pathname type)))))))
                                     (om::string+ "r" "'" filepathname "'")))
-        (fixnum (write-to-string type))
-        (float (write-to-string type))
-        
-        (cons (let* (
+            (fixnum (write-to-string type))
+            (float (write-to-string type))
+               
+            (cons (let* (
                         (conteudo (loop :for atom :in type :collect (concatString (om::x-append (format2python-v3 atom) '(", "))))))
                         (concatString (om::x-append "[" conteudo "]"))))
-        (single-float (write-to-string type))
-        (null " None")
-        (symbol (if (equal type 't) " True" type)) 
-        ('om::pure-data (py-list->string  (list (namestring (om::pd-path type))))) ;; It will need of OM-CKN????????????? I think not!
-        (pathname  (py-list->string  (list (namestring type))))))
+            (single-float (write-to-string type))
+            (null " None")
+            (symbol (if (equal type 't) " True" type)) 
+            ('om::pure-data (py-list->string  (list (namestring (om::pd-path type))))) ;; It will need of OM-CKN????????????? I think not!
+            (pathname  (py-list->string  (list (namestring type))))
+            ((unsigned-byte 16) (write-to-string type))
+            
+            (otherwise (progn 
+                                                (om::om-print "format2python: type not found! Please report to charlesneimog@outlook.com" "ERROR")
+                                                (write-to-string type)
+                                                
+                                                ))
+
+            ))
+
+
+
 
 
 ;; ================= Some Functions =====================
