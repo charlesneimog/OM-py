@@ -35,14 +35,14 @@
             (oa::om-command-line 
                         #+mac "python3 -m pip install virtualenv"
                         #+windows "pip install virtualenv"
-                        #+linux "sudo apt install python3.8-venv -S"
+                        #+linux "sudo apt install python3 venv -S"
                                                                   t)
                   ;; Pip create env 
             
             (oa::om-command-line 
                   #+mac  (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))
                   #+windows (om::string+ "python -m venv " (py-list->string (list (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))))
-                  #+linux (om::string+ "python3.8 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))                                          
+                  #+linux (om::string+ "python3 -m venv " (namestring (merge-pathnames "OM-py-env/" (om::tmpfile ""))))                                          
                                               t)
             
             (sleep 5)
@@ -87,25 +87,37 @@
       "This is the function to format the lisp and OM code and classes to be used in Python."
 
     (case (type-of type)
-        (lispworks:simple-text-string (if (null (probe-file type))
+            (lispworks:simple-text-string (if (null (probe-file type))
                                           (py-list->string (list type))
                                           (py-list->string (list (namestring type)))))
-        (sound (let* (
+            (sound (let* (
                       (filepathname (namestring (car (if (not (om::file-pathname type)) 
                                                          (om::list! (save-temp-sounds type (om::string+ "format-" (format nil "~7,'0D" (om-random 0 999999)) "-")))
                                                          (om::list! (om::file-pathname type)))))))
                                     (om::string+ "r" "'" filepathname "'")))
-        (fixnum (write-to-string type))
-        (float (write-to-string type))
-        
-        (cons (let* (
+            (fixnum (write-to-string type))
+            (float (write-to-string type))
+               
+            (cons (let* (
                         (conteudo (loop :for atom :in type :collect (concatString (om::x-append (format2python-v3 atom) '(", "))))))
                         (concatString (om::x-append "[" conteudo "]"))))
-        (single-float (write-to-string type))
-        (null " None")
-        (symbol (if (equal type 't) " True" type)) 
-        ('om::pure-data (py-list->string  (list (namestring (om::pd-path type))))) ;; It will need of OM-CKN????????????? I think not!
-        (pathname  (py-list->string  (list (namestring type))))))
+            (single-float (write-to-string type))
+            (null " None")
+            (symbol (if (equal type 't) " True" type)) 
+            ('om::pure-data (py-list->string  (list (namestring (om::pd-path type))))) ;; It will need of OM-CKN????????????? I think not!
+            (pathname  (py-list->string  (list (namestring type))))
+            ((unsigned-byte 16) (write-to-string type))
+            
+            (otherwise (progn 
+                                                (om::om-print "format2python: type not found! Please report to charlesneimog@outlook.com" "ERROR")
+                                                (write-to-string type)
+                                                
+                                                ))
+
+            ))
+
+
+
 
 
 ;; ================= Some Functions =====================
@@ -211,6 +223,8 @@
 ;===============================
 
 (defun remove-py-var (code var)
+"It removes the variables between comment in the begin of the python code."
+
   (let* (
         (var-1 (first var))
         (remove-from-code (remove nil (mapcar (lambda (x) (if (null (search var-1 x)) x)) code)))
@@ -339,8 +353,8 @@
 
 (if om::*vscode-is-open?* 
     (progn 
-            (om::om-message-dialog "You need to close VScode First to update the code!") 
-            (om::abort-eval))) ;; MAKE A DIALOG
+            (om::om-message-dialog "You need to close VScode First to update the code!")   ;; MAKE A DIALOG
+            (om::abort-eval)))
 
 ; ================= PYTHON PRINT ON OM ==========================================
 (if (not om_py-threading_work) 
@@ -355,7 +369,7 @@
       (where-i-am-running 
                               #+mac (om::string+ *activate-virtual-enviroment* " && python3 ")
                               #+windows (om::string+ *activate-virtual-enviroment* " && python ")
-                              #+linux (om::string+ *activate-virtual-enviroment* " && python3.8 ")))
+                              #+linux (om::string+ *activate-virtual-enviroment* " && python3 ")))
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
