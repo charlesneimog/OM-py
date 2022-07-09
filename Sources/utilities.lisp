@@ -23,7 +23,7 @@
 ; ================================= VIRTUAL ENV =================================================================
                               
 #+windows (defvar *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "OM-py-env/Scripts/activate.bat" (om::tmpfile ""))))) "nil")
-#+linux (defvar *activate-virtual-enviroment* (om::string+ "bash " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))) "nil")
+#+linux (defvar *activate-virtual-enviroment* (om::string+ "source " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))) "nil")
 #+mac (defvar *activate-virtual-enviroment* (om::string+ "source " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))) "nil")
 
 ; =================================
