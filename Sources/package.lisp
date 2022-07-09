@@ -33,7 +33,7 @@
 (if (or (null (get-pref-value :externals :py-enviroment)) (equal (get-pref-value :externals :py-enviroment) ""))
        nil
        #+windows (setq om-py::*activate-virtual-enviroment* (om-py::py-list->string (list (get-pref-value :externals :py-enviroment))))
-       #+linux (setq (om::string+ "source " (get-pref-value :externals :py-enviroment)))
+       #+linux (setq (om::string+ ". " (get-pref-value :externals :py-enviroment)))
        #+macos (setq (om::string+ "source " (get-pref-value :externals :py-enviroment))))
 
 
