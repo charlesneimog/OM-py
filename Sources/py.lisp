@@ -118,11 +118,25 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 
 ;; ======
 
-(defmethod draw-patch-icon :after ((self OMBoxpy) &optional (offset-x 0) (offset-y 0))
+; OM# 1.6 
+; (defmethod draw-patch-icon :after ((self OMBoxpy) &optional (offset-x 0) (offset-y 0))
+;   (when (error-flag (reference self))
+;     (om-with-fg-color (om-def-color :darkgreen)
+;       (om-with-font (om-make-font "Arial" 14 :style '(:bold))
+;                     (om-draw-string (+ offset-x 2) (+ offset-y (- (box-h self) 8)) "Error !!")))))
+
+
+
+(defmethod draw-patch-icon :after ((self OMBoxpy) icon &optional (offset-x 0) (offset-y 0))
   (when (error-flag (reference self))
-    (om-with-fg-color (om-def-color :darkgreen)
-      (om-with-font (om-make-font "Arial" 14 :style '(:bold))
-                    (om-draw-string (+ offset-x 2) (+ offset-y (- (box-h self) 8)) "Error !!")))))
+    (om-with-fg-color (om-def-color :dark-red)
+      (om-with-font
+       (om-make-font "Arial" 14 :style '(:bold))
+       (om-draw-string (+ offset-x (/ (box-w self) 2) -30)
+                       (+ offset-y 20)
+                       "Error !!")))))
+
+
 
 ;; ======
 
@@ -525,11 +539,24 @@ to_om(list_of_numbers)
 
 ;; ======
 
-(defmethod draw-patch-icon :after ((self OMBox-run-py) &optional (offset-x 0) (offset-y 0))
+(defmethod draw-patch-icon :after ((self OMBox-run-py) icon &optional (offset-x 0) (offset-y 0))
   (when (error-flag (reference self))
     (om-with-fg-color (om-def-color :darkgreen)
       (om-with-font (om-make-font "Arial" 14 :style '(:bold))
                     (om-draw-string (+ offset-x 2) (+ offset-y (- (box-h self) 12)) "Error !!")))))
+
+
+
+
+; (defmethod draw-patch-icon :after ((self OMBoxpy) icon &optional (offset-x 0) (offset-y 0))
+;   (when (error-flag (reference self))
+;     (om-with-fg-color (om-def-color :dark-red)
+;       (om-with-font
+;        (om-make-font "Arial" 14 :style '(:bold))
+;        (om-draw-string (+ offset-x (/ (box-w self) 2) -30)
+;                        (+ offset-y 20)
+;                        "Error !!")))))
+
 
 ;; ======
 
