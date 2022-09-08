@@ -6,7 +6,7 @@ OM-py bring python to visual enviroment. For this library work properly you need
 * Install OM Libraries;
 * Install Python (see your plataform).
 
-## [Download](https://bit.ly/3xYSkWt)
+## [Download](https://github.com/charlesneimog/om-py/releases/download/0.3/OM-py.zip)
 
 
 OM-py is a bridge between Python and OM environments. What it does is format some types of data that are differently represented. For example, one list of numbers in OM is represented by `(1 2 3 4 5)`. In Python, the same list is represented by `[1, 2, 3, 4, 5]`. Sounds inside OM are represented by a class, for example, `#<sound 23186913>`. To send this `#<sound 23186913>` to Python, we need to save it in a temp folder and then give it to Python by a `pathname`.
