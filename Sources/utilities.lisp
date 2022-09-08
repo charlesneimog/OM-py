@@ -353,8 +353,9 @@
 
 (if om::*vscode-is-open?* 
     (progn 
-            (om::om-message-dialog "You need to close VScode First to update the code!")   ;; MAKE A DIALOG
-            (om::abort-eval)))
+            (om::om-message-dialog "It is good practice to close the VScode first, run the python code without close VScode could result in errors!")   ;; MAKE A DIALOG
+            ; (om::abort-eval)
+            ))
 
 ; ================= PYTHON PRINT ON OM ==========================================
 (if (not om_py-threading_work) 
@@ -452,7 +453,6 @@
                   (loop :for module :in (om::list! import-modules) 
                         :collect (format nil 
 "
-
 try:
     import ~d
 except ImportError:
@@ -533,7 +533,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 ;================================== CHECK OM-PY UPDATE ============================
 
-(defparameter *this-version* 0.2)
+(defparameter *this-version* 0.3)
 
 (ignore-errors 
       (mp:process-run-function "Check for om-py updates!" () 
