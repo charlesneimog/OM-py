@@ -1,5 +1,8 @@
 # OM-py 
 
+**Cite this repository:** [![DOI](https://zenodo.org/badge/448400037.svg)](https://zenodo.org/badge/latestdoi/448400037)
+
+
 OM-py bring python to visual enviroment. For this library work properly you need to download it, and then read the topics in this documentation:
 
 * Install OM-Sharp;
