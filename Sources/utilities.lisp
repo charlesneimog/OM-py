@@ -150,8 +150,6 @@
     ((modules :initform nil :initarg :modules :accessor modules))
     (:documentation "This class will have all the external modules used and maybe some functions used in the python class, all things that are used in your python code and could not be repeated."))
 
-
-
 ;==================================== STOLEN FUNCTIONS =========================
 
 (defun read-python-script-lines (filename)
@@ -268,11 +266,17 @@
 ;================================================================
 
 (defun read_from_python (x) 
-    (om::flat (loop :for y :in (om::list! x) :collect 
-                              (if 
-                                    (equal (type-of y) 'lispworks:simple-text-string)
-                                    (read-from-string y)
-                                    y)) 1))
+      (let* (
+            (PythonOutput (om::flat       
+                              (loop :for y :in (om::list! x) 
+                                    :collect 
+                                          (if 
+                                                (equal (type-of y) 'lispworks:simple-text-string)
+                                                (read-from-string y)
+                                                y)) 1)))
+            (if (equal (length PythonOutput) 1)
+                  (first PythonOutput)
+                  PythonOutput)))
 
 ; ================================= Import modules functions ======================
 
@@ -351,6 +355,7 @@
 :icon 'py-f
 :doc "This object will run python scripts inside the py and py-code special-boxes. "
 
+(stop-python-print-server)
 (if om::*vscode-is-open?* 
     (progn 
             (om::om-message-dialog "It is good practice to close the VScode first, run the python code without close VScode could result in errors!")   ;; MAKE A DIALOG
@@ -377,6 +382,7 @@
             (mp:process-run-function "del-py-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (om::tmpfile python-name :subdirs "om-py"))
             (mp:process-run-function "del-data-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
             (stop-python-print-server)
+             
             (read_from_python (if   (null data)        
                                             nil
                                            (om::get-slot-val (progn (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
@@ -519,7 +525,6 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 (om::make-value 'om::textbuffer (list (list :contents (code python)))))
 
-
 ;==================================
 
 (defmethod! text->py ((python string))
@@ -530,6 +535,47 @@ from om_py import to_om" format-import format-from_import format_import*))))
 
 
 (om::make-value 'python (list (list :code python))))
+
+;================================== OM-PY Developers ============================
+(defun read_python_script (filename)
+    (with-open-file (stream filename)
+        (loop   :for line := (read-line stream nil)
+                :while line
+                :collect (om::string+ line (string #\NewLine)))))
+
+; ------------------------------------------------------------
+(defun lispVar2PyVar(listOfNames listOfValues)
+    (loop :for variable_name :in listOfNames
+          :for value :in listOfValues
+          :collect (format nil "~a=~a~d" (string variable_name) (format2python-v3 value) (string #\NewLine))))
+
+
+; ------------------------------------------------------------
+(defun run-py-script (filename listOfVariables listOfValues &key (thread nil))
+
+(if (not (equal (length listOfVariables) (length listOfValues)))
+    (om::om-message-dialog "Developer Warning: The number of Variables and Values are different"))
+
+    (let* (
+            (readScript (read_python_script filename))
+            (pyVar (lispVar2PyVar listOfVariables listOfValues))
+            (pyScript (om-py::concatstring (om::x-append pyVar readScript)))
+            (om-pyClass (om::make-value 'python (list (list :code pyScript)))))
+            (if thread
+                  (mp:process-run-function "Python" ()
+                        (lambda () (om-py::run-py om-pyClass)))
+                  (om-py::run-py om-pyClass))))
+
+; ------------------------------------------------------------
+(defun find-library-PyScripts (libname scriptname)
+      (let* (
+            (scriptPath (merge-pathnames (format nil "resources/python/~d" scriptname)  (om::mypathname (om::find-library libname)))))
+            (if (probe-file scriptPath) 
+                        scriptPath 
+                        (progn 
+                              (om::om-message-dialog (format nil "The script '~d' was not found in the library '~d'" scriptname libname)) 
+                              (om::abort-eval)))))
+
 
 ;================================== CHECK OM-PY UPDATE ============================
 
@@ -558,3 +604,5 @@ from om_py import to_om" format-import format-from_import format_import*))))
                                                 (hqn-web:browse "https://github.com/charlesneimog/om-py/releases/latest")))
                                                       (alexandria::delete-file tmpfile)))))))
                               
+; =====================================
+
