@@ -471,7 +471,7 @@ from om_py import to_om
 "))
       (all_code (om-py::concatstring (x-append om_py verification-module)))
       (check-the-modules (om-py::run-py (om::make-value 'python (list (list :code all_code))))))                
-      (loop :for not_installed :in check-the-modules 
+      (loop :for not_installed :in (om::list! check-the-modules)
             :do 
                   (let* (
                               (visual-message (pip-install not_installed))
