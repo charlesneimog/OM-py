@@ -53,7 +53,7 @@ If you want, you can define your own Python enviroment in external:
 
 ![image](https://user-images.githubusercontent.com/31707161/154857500-1623c6b3-98b5-4234-97a9-77bbdac87936.png)
 
-**Copy and paste your `PATH_ENVIROMENT` +:
+by using: `conda activate composition` for example in the Python enviroment!
 
 1. **`Scripts/activate.bat` for Windows;**
 2. **`bin/activate` for Ubuntu.**
