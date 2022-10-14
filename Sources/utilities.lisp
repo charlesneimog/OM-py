@@ -274,9 +274,7 @@
                                                 (equal (type-of y) 'lispworks:simple-text-string)
                                                 (read-from-string y)
                                                 y)) 1)))
-            (if (equal (length PythonOutput) 1)
-                  (first PythonOutput)
-                  PythonOutput)))
+            PythonOutput))
 
 ; ================================= Import modules functions ======================
 
