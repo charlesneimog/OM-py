@@ -9,7 +9,8 @@
 (:source-files
       "Sources/package.lisp"
       "Sources/utilities"
-      "Sources/py"
+      "Sources/sharp-py-code"
+      "Sources/sharp-py-run"
       "Sources/visual-enviroment"
       )
 
