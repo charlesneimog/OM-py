@@ -3,6 +3,7 @@
 ;;      by Charles K. Neimog 
 ;; University of São Paulo (2021-2022)
            
+; =============================
 
 (in-package :om)
 
@@ -18,7 +19,6 @@
             "sources/package"
             "sources/OM/OM-py"
             "sources/OM/OM-Functions"
-           
             ))
 
 ; ========================================

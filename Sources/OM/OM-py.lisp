@@ -16,7 +16,7 @@
 ;; =================================
 
 (defmethod obj-file-type ((self OMpythonPatch)) :python)
-(defmethod obj-file-extension ((self OMpythonPatch)) "oml")
+(defmethod obj-file-extension ((self OMpythonPatch)) "py")
 (defmethod get-object-insp-name ((self OMpythonPatch)) "python Function")
 
 ;; =================================
