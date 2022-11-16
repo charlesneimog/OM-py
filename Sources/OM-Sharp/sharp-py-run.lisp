@@ -115,26 +115,6 @@ to_om(list_of_numbers)
 (omNG-make-new-boxcall (make-instance 'run-py-f-internal :name adapt-window :text script-text) pos (om::list! adapt-window))))
 
 ;; ======================================================
-
-(defmethod get-properties-list ((self OMBox-run-py))
-
-  `(("Appearance" ;;; category
-      (:color "Color" :color-or-nil color (:appearance :box-color))
-      (:border "Border" ,(make-number-or-nil :min 0 :max 4 :decimals 1) border (:appearance :box-border))
-      (:roundness "Corner" ,(make-number-or-nil :min 0 :max 20) roundness (:appearance :box-roundness))
-      (:text-font "Text font" :font-or-nil text-font (:appearance :box-font))
-      (:align "Text align" (:left :center :right :default) text-align (:appearance :box-align)))
-    
-    ("Sequencer" ;;; category
-      (:group-id "Group/Track" (:none 1 2 3 4 5 6 7 8) group-id))
-
-
-    ("Python" ;;; category
-      (:bool "WSL" :bool nil))))
-      
-
-
-;; ======================================================
 ;; ======================================================
 
 (defmethod decapsulable ((self run-py-f)) nil)
@@ -184,10 +164,6 @@ to_om(list_of_numbers)
                         (setf (error-flag self) t)
                        `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
 (compile (eval function-def))))
-
-;;; ==============================
-;;; Externalize File
-;;; ==============================
 
 ;============================================================================
 ; Py Function as external file

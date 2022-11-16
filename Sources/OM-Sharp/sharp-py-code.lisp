@@ -118,15 +118,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 
 ;; ======
 
-; OM# 1.6 
-; (defmethod draw-patch-icon :after ((self OMBoxpy) &optional (offset-x 0) (offset-y 0))
-;   (when (error-flag (reference self))
-;     (om-with-fg-color (om-def-color :darkgreen)
-;       (om-with-font (om-make-font "Arial" 14 :style '(:bold))
-;                     (om-draw-string (+ offset-x 2) (+ offset-y (- (box-h self) 8)) "Error !!")))))
-
-
-
 (defmethod draw-patch-icon :after ((self OMBoxpy) icon &optional (offset-x 0) (offset-y 0))
   (when (error-flag (reference self))
     (om-with-fg-color (om-def-color :dark-red)
@@ -135,8 +126,6 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
        (om-draw-string (+ offset-x (/ (box-w self) 2) -30)
                        (+ offset-y 20)
                        "Error !!")))))
-
-
 
 ;; ======
 
@@ -230,6 +219,11 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
 (defmethod om-lisp::save-operation-enabled ((self py-function-editor-window)) nil)
 
 (defmethod open-editor-window ((self py-function-editor))
+  (print "Quero Abrir o Editor")
+  (print self)
+  (print (text (object self)))
+  (open-vscode (om::make-value 'OMPYFunction  (list (list :text (text (object self))))))
+  
   (if (and (window self) (om-window-open-p (window self)))
       (om-select-window (window self))
     (let* ((pyf (object self))
@@ -247,6 +241,9 @@ to_om(sum) # If you want to use something inside OM, you need to print it.
       (setf (window self) edwin)
       (om-lisp::text-edit-window-activate-callback edwin t) ;; will (re)set the menus with the editor in place
       edwin)))
+
+;; ========================================
+
 
 (defmethod om-lisp::text-editor-window-menus ((self py-function-editor-window))
   (om-menu-items (editor self)))

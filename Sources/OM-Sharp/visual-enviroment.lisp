@@ -22,29 +22,24 @@
 (defun open-vscode (selected-boxes)
 
 (let*  (
+       
+       (ok (om-print selected-boxes "OM-PY"))
        (vs-code (read-from-string 
                      (reduce #'(lambda (s1 s2) 
                             (concatenate 'string s1 (string #\Newline) s2)) (text (reference (car (om::list! selected-boxes))))) nil))
        (var (car (cdr vs-code)))
-       
        (python-var (mapcar (lambda (y) `(om::string+ ,y)) (mapcar (lambda (x) (string+ (write-to-string x) " " "= ")) var)))
-       
        (input-values (mapcar (lambda (x) (omng-box-value x)) (inputs (car (om::list! selected-boxes))))) ;; get input values
-       
        (separation1 (om::string+ "# ======================= Add OM Variables BELOW this Line ========================" (string #\Newline)))
-
        (separation2 (om::string+ "# ======================= Add OM Variables ABOVE this Line ========================" (string #\Newline)))
-       
        (format2python (mapcar (lambda (x) (om-py::format2python-v3 x)) input-values))
-       
        (lisp-var2py-var (mapcar (lambda (x y) `(,@x ,y (string #\Newline))) python-var (om::list! format2python)))
-       
        (lisp-2-python-var (eval `(om-py::concatstring (om::x-append ,@lisp-var2py-var nil nil))))
-       
        (path (om::save-as-text 
                      (om::string+ separation1 (string #\Newline) lisp-2-python-var (string #\Newline) separation2 (third vs-code))
                      (om::tmpfile (om::string+ "tmp-code-" (write-to-string (om::om-random 100 999)) ".py") :subdirs "om-py"))))
        
+       ; replace for (call-next-method)
        (mp:process-run-function (string+ "VSCODE Running!") ;; Se não, a interface do OM trava
                                    () 
                                           (lambda () (vs-code-update-py-box path selected-boxes (second vs-code))))

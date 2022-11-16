@@ -77,8 +77,8 @@
                         (mapcar (lambda (x) (format nil "~6,'0D" x)) (om::arithm-ser 1 (length (om::list! sounds)) 1)))))
       
             (loop :for loop-sound :in (om::list! sounds)
-                :for loop-names :in first-action1
-                :collect (om:save-sound loop-sound (merge-pathnames "om-py/" (om::tmpfile (om::string+ loop-names ".wav"))))))) 
+                  :for loop-names :in first-action1
+                  :collect (om:save-sound loop-sound (merge-pathnames "om-py/" (om::tmpfile (om::string+ loop-names ".wav"))))))) 
                 
                 ;; TODO add (get-pref-value :Audio :format)
 
@@ -109,16 +109,9 @@
             ((unsigned-byte 16) (write-to-string type))
             
             (otherwise (progn 
-                                                (om::om-print "format2python: type not found! Please report to charlesneimog@outlook.com" "ERROR")
-                                                (write-to-string type)
-                                                
-                                                ))
-
-            ))
-
-
-
-
+                                    (om::om-print "format2python: type not found! Please report to charlesneimog@outlook.com" "ERROR")
+                                    (write-to-string type)
+                                    ))))
 
 ;; ================= Some Functions =====================
 
@@ -133,7 +126,6 @@
 (defun lisp->list-py-run (list)
       "Transform a list in lisp to a list in Python."
       (om::flat (loop :for x :in list :collect (x-append x ", "))))
-
 
 ;; ================================================ PY CODE INSIDE OM ===========
 
@@ -156,9 +148,9 @@
       "Return the content of a file as a string."
       (remove nil 
             (with-open-file (stream filename)
-                  (loop for line = (read-line stream nil) 
-                        while line
-                        collect line))))
+                  (loop :for line := (read-line stream nil) 
+                        :while line
+                        :collect line))))
 
 ;https://stackoverflow.com/questions/12906738/common-lisp-print-on-one-line-return-single-line-counter-formatting
 
@@ -202,21 +194,21 @@
       "Returns the depth of a list."
       (if (listp list)
             (+ 1 (reduce #'max (mapcar #'list-depth list)
-                        :initial-value 0))
-                    0))
+                        :initial-value 0)) 
+            0))
 
 ;=====================================================================
 
 (defun remove-lisp-var (pathname-of-code)
 
-    (remove nil (loop :for lines :in (read-python-script-lines pathname-of-code)
-                      :collect 
-                    (let* (
-                          (characters  (char-by-char lines))
-                          (is-py-var (equal (om-py::concatstring (om::first-n characters 8)) "#(py_var")))
-                          (if is-py-var
-                              nil
-                              lines))))) ;;  remove 
+      (remove nil (loop :for lines :in (read-python-script-lines pathname-of-code)
+                        :collect 
+                              (let* (
+                                    (characters  (char-by-char lines))
+                                    (is-py-var (equal (om-py::concatstring (om::first-n characters 8)) "#(py_var")))
+                                    (if is-py-var
+                                          nil
+                                          lines))))) ;;  remove 
         
 ;===============================
 
@@ -238,16 +230,14 @@
 "It removes all the temp files created by om-py inside the om-py folder."
 (progn
             (mp:process-run-function (om::string+ "Clear Temp Files " (write-to-string (om-random 1 1000)))
-                 () 
+                  () 
                         (lambda () (oa::om-delete-directory (merge-pathnames "om-py/" (tmpfile ""))) nil))
             (ensure-directories-exist (tmpfile " " :subdirs "\om-py"))))
                                          
 ;; ================================
 
 (defun clear-the-file (thefile)
-
 "This delete the file in other thread that not the main of OM."
-
 (mp:process-run-function (om::string+ "Clear Temp Files" (write-to-string (om-random 1 1000)))
                  () 
                  (lambda (x) (alexandria::delete-file thefile)) thefile))
@@ -255,11 +245,10 @@
 ;================================== WAIT PROCESS =================
 
 (defun loop-until-probe-file (my-file)
-
 "This function is used to wait until the file is created."
-        (loop :with file = nil 
-              :while (equal nil (setf file (probe-file my-file)))
-        :collect file)
+      (loop :with file = nil 
+            :while (equal nil (setf file (probe-file my-file)))
+            :collect file)
         
 (probe-file my-file))
 
@@ -406,10 +395,15 @@
 :icon 'py-f
 :doc ""
 
-(om::make-value 'om-py::python (list (list :code (concatString (loop :for code :in codes :collect (if (null code)
-                                                                                                      nil 
-                                                                                                    (case (type-of code) 
-                                                                                                          ('|om-python|::py-externals-mod (om::string+ (modules code) (string #\Newline)))                                                                                           ('|om-python|::python (om::string+ (code code) (string #\Newline)))))))))))
+(om::make-value 'om-py::python 
+      (list 
+            (list 
+                  :code (concatString 
+                        (loop :for code :in codes 
+                              :collect (if 
+                                          (not (null code))
+                                          (case (type-of code) 
+                                                ('|om-python|::py-externals-mod (om::string+ (modules code) (string #\Newline)))                                                                                           ('|om-python|::python (om::string+ (code code) (string #\Newline)))))))))))
 ;; ========================
 
 (defmethod! py-append-code (&rest rest)
@@ -535,6 +529,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
 (om::make-value 'python (list (list :code python))))
 
 ;================================== OM-PY Developers ============================
+
 (defun read_python_script (filename)
     (with-open-file (stream filename)
         (loop   :for line := (read-line stream nil)
@@ -546,7 +541,6 @@ from om_py import to_om" format-import format-from_import format_import*))))
     (loop :for variable_name :in listOfNames
           :for value :in listOfValues
           :collect (format nil "~a=~a~d" (string variable_name) (format2python-v3 value) (string #\NewLine))))
-
 
 ; ------------------------------------------------------------
 (defun run-py-script (filename listOfVariables listOfValues &key (thread nil))

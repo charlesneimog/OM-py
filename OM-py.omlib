@@ -7,11 +7,11 @@
  ;;; SOURCE FILES TO LOAD
 
 (:source-files
-      "Sources/package.lisp"
-      "Sources/utilities"
-      "Sources/sharp-py-code"
-      "Sources/sharp-py-run"
-      "Sources/visual-enviroment"
+      "sources/package"
+      "sources/utilities"
+      "sources/OM-Sharp/sharp-py-code"
+      "sources/OM-Sharp/sharp-py-run"
+      "sources/OM-Sharp/visual-enviroment"
       )
 
 (:symbols 
