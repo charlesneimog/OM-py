@@ -3,7 +3,7 @@
 
 (defclass OMpythonPatch (OMPatch) 
   ((list-exp :initform nil :initarg :python-exp :accessor python-exp))
-  (:icon 124)
+  (:icon 1997)
   (:documentation "The a patch written in python")
   (:metaclass omstandardclass))
 
@@ -36,17 +36,23 @@
 
 (defun omNG-make-new-python-patch (name &optional (posi (om-make-point 0 0)))
  "Make an instance of patch."
-   (let ((newpatch (make-instance 'OMpythonPatch :name name :icon 124)))
+   (let ((newpatch (make-instance 'OMpythonPatch :name name :icon 1997)))
      (set-icon-pos newpatch posi)
      newpatch))
 
 ;; =================================
 
 (defun compile-python-patch-fun (patch)
+
+
+(print (cdr (get-python-exp (python-exp patch))))
+
   (if (get-python-exp (python-exp patch))
+      
       (eval `(defun ,(intern (string (code patch)) :om)
-                    ,.(cdr (get-python-exp (python-exp patch)))))
-    (eval `(defun ,(intern (string (code patch)) :om) () nil))))
+                ,.(cdr (get-python-exp (python-exp patch)))))
+
+      (eval `(defun ,(intern (string (code patch)) :om) () nil))))
 
 ;; =================================
 
@@ -79,7 +85,7 @@
 ;; =================================
 
 (defun om-load-python-abspatch (name version expression)
-   (let ((newpatch (make-instance 'OMpythonPatchAbs :name name :icon 123)))
+   (let ((newpatch (make-instance 'OMpythonPatchAbs :name name :icon 1997)))
      (setf (omversion newpatch) version)
      (setf (python-exp newpatch) (get-python-str expression))
      (compile-python-patch-fun newpatch)
@@ -139,7 +145,7 @@
 
 (defmethod patch2abs ((self OMpythonPatch))
    "Cons a new instance of 'OMPatchAbs from the patch 'self'."
-   (let ((newabs (make-instance 'OMpythonPatchAbs :name (name self)  :icon 123)))
+   (let ((newabs (make-instance 'OMpythonPatchAbs :name (name self)  :icon 1997)))
      (setf (python-exp newabs) (python-exp self))
      (set-icon-pos newabs (get-icon-pos self))
      (setf (doc newabs) (doc self))

@@ -163,6 +163,7 @@ to_om(list_of_numbers)
                   (progn (om-beep-msg "ERROR ON PY FORMAT!!")
                         (setf (error-flag self) t)
                        `(defun ,(intern (string (compiled-fun-name self)) :om) () nil)))))
+(print function-def)
 (compile (eval function-def))))
 
 ;============================================================================

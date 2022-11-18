@@ -42,7 +42,7 @@
                 (setf newbox (omNG-make-new-boxcall 
                         (make-instance 'OMpythonPatchAbs 
                             :name (mk-unique-name scroller "PythonFunction")
-                            :icon 123)
+                            :icon 1997)
                         pos 
                         (mk-unique-name scroller "PythonFunction")))))
 
