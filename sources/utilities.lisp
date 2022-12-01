@@ -343,16 +343,13 @@
 :doc "This object will run python scripts inside the py and py-code special-boxes. "
 
 (stop-python-print-server)
+; ===
 (if om::*vscode-is-open?* 
-    (progn 
-            (om::om-message-dialog "It is good practice to close the VScode first, run the python code without close VScode could result in errors!")   ;; MAKE A DIALOG
-            ; (om::abort-eval)
-            ))
-
-; ================= PYTHON PRINT ON OM ==========================================
+      (om::om-message-dialog "It is good practice to close the VScode first, run the python code without close VScode could result in errors!"))
+; ===
 (if (not om_py-threading_work) 
-(start-python-print-server))
-; ================= PYTHON PRINT ON OM ==========================================
+      (start-python-print-server))
+; ===
 
 (let* (
       (python-code (code (py-append-code cabecario code)))
@@ -360,19 +357,18 @@
       (save-python-code (om::save-as-text python-code (om::tmpfile python-name :subdirs "om-py")))
       (prepare-cmd-code (py-list->string (list (namestring save-python-code))))
       (where-i-am-running 
-                              #+mac (om::string+ *activate-virtual-enviroment* " && python3 ")
-                              #+windows (om::string+ *activate-virtual-enviroment* " && python ")
-                              #+linux (om::string+ *activate-virtual-enviroment* " && python3 ")))
+                        #+mac (om::string+ *activate-virtual-enviroment* " && python3 ")
+                        #+windows (om::string+ *activate-virtual-enviroment* " && python ")
+                        #+linux (om::string+ *activate-virtual-enviroment* " && python3 ")))
       (oa::om-command-line (om::string+ where-i-am-running prepare-cmd-code) t)
       (let* (
             (data (om::make-value-from-model 'textbuffer (probe-file (merge-pathnames (user-homedir-pathname) "py_values.txt")) nil)))
             (mp:process-run-function "del-py-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (om::tmpfile python-name :subdirs "om-py"))
             (mp:process-run-function "del-data-code" () (lambda (x) (if remove-tmpfile (clear-the-file x))) (merge-pathnames (user-homedir-pathname) "py_values.txt"))
             (stop-python-print-server)
-             
             (read_from_python (if   (null data)        
-                                            nil
-                                           (om::get-slot-val (progn (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
+                                    nil
+                                    (om::get-slot-val (progn (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
                      
 ;; ========================
 
@@ -433,7 +429,7 @@
 :icon 'py-f
 :doc "This object will add external modules to the python environment."
 
-;; COLOCAR UM MODO DE SEMPRE RODAR O PIP UPGRADE PIP
+;; TODO: COLOCAR UM MODO DE SEMPRE RODAR O PIP UPGRADE PIP
 
 (if   
       (or (= 2 (list-depth from_import)) (null from_import))
