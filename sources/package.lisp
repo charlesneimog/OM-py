@@ -30,8 +30,8 @@
           (add-preference :externals :check-updates "Online checking of updates" :bool t "If checked, om-py will look for new updates.")
           (if (not (or (null (get-pref-value :externals :py-enviroment)) (equal (get-pref-value :externals :py-enviroment) "")))
                 #+windows (setq om-py::*activate-virtual-enviroment* (get-pref-value :externals :py-enviroment))
-                #+linux (setq (om::string+ ". " (get-pref-value :externals :py-enviroment)))
-                #+macos (setq (om::string+ "source " (get-pref-value :externals :py-enviroment))))))
+                #+linux (setq om-py::*activate-virtual-enviroment* (get-pref-value :externals :py-enviroment))
+                #+macos (setq om-py::*activate-virtual-enviroment* (om::string+ "source " (get-pref-value :externals :py-enviroment))))))
 
 ; ======================= OpenMusic Preferences ==================================
 
