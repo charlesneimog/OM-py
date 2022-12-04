@@ -342,6 +342,20 @@
 :icon 'py-f
 :doc "This object will run python scripts inside the py and py-code special-boxes. "
 
+
+(if (equal *app-name* "om-sharp")
+      (if (not (or (null (om::get-pref-value :externals :py-enviroment)) (equal (om::get-pref-value :externals :py-enviroment) "")))
+            #+windows (setq *activate-virtual-enviroment* (om::get-pref-value :externals :py-enviroment))
+            #+linux (setq *activate-virtual-enviroment* (om::get-pref-value :externals :py-enviroment))
+            #+macos (setq *activate-virtual-enviroment* (om::string+ "source " (om::get-pref-value :externals :py-enviroment)))))
+
+(if (equal *app-name* "om-sharp")
+      (if (or (equal (om::get-pref-value :externals :py-enviroment) nil) (equal (om::get-pref-value :externals :py-enviroment) ""))
+            #+windows (setq *activate-virtual-enviroment* (py-list->string (list (namestring (merge-pathnames "OM-py-env/Scripts/activate.bat" (om::tmpfile ""))))))
+            #+linux (setq *activate-virtual-enviroment* (om::string+ ". " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))))
+            #+mac (setq *activate-virtual-enviroment* (om::string+ "source " (namestring (merge-pathnames "OM-py-env/bin/activate" (om::tmpfile "")))))))
+
+
 (stop-python-print-server)
 ; ===
 (if om::*vscode-is-open?* 
@@ -370,7 +384,9 @@
                                     nil
                                     (om::get-slot-val (progn (setf (om::reader data) :lines-cols) data) "CONTENTS"))))))
                      
-;; ========================
+;; =============================
+;; =============================
+;; =============================
 
 (defmethod! py-add-var ((function function) &rest rest)
 :initvals '("Py-code function in lambda mode" "all the variables used.")

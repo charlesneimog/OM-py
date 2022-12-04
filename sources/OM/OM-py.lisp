@@ -2,7 +2,7 @@
 (in-package :om)
 
 (defclass OMpythonPatch (OMPatch) 
-  ((list-exp :initform nil :initarg :python-exp :accessor python-exp))
+  ((python-exp :initform nil :initarg :python-exp :accessor python-exp))
   (:icon 1997)
   (:documentation "The a patch written in python")
   (:metaclass omstandardclass))
@@ -36,23 +36,23 @@
 
 (defun omNG-make-new-python-patch (name &optional (posi (om-make-point 0 0)))
  "Make an instance of patch."
-   (let ((newpatch (make-instance 'OMpythonPatch :name name :icon 1997)))
-     (set-icon-pos newpatch posi)
-     newpatch))
+    (let (
+          (newpatch (make-instance 'OMpythonPatch :name name :icon 1997)))
+          (set-icon-pos newpatch posi)
+          newpatch))
 
 ;; =================================
 
 (defun compile-python-patch-fun (patch)
+  (print "I am the compile-python-patch-fun")
+  
 
-
-(print (cdr (get-python-exp (python-exp patch))))
-
+  
+  
   (if (get-python-exp (python-exp patch))
-      
       (eval `(defun ,(intern (string (code patch)) :om)
-                ,.(cdr (get-python-exp (python-exp patch)))))
-
-      (eval `(defun ,(intern (string (code patch)) :om) () nil))))
+                    ,.(cdr (get-python-exp (python-exp patch)))))
+    (eval `(defun ,(intern (string (code patch)) :om) () nil))))
 
 ;; =================================
 
@@ -64,8 +64,7 @@
                     (capi::display-message "An error of type ~a occurred: ~a" (type-of err) (format nil "~A" err))
                     (abort err))))
       (compile-python-patch-fun self)
-      (setf (compiled? self) t))
-    ))
+      (setf (compiled? self) t))))
 
 ;; =================================
 
@@ -97,11 +96,13 @@
   (unless (compiled? self)
     (compile-python-patch-fun self))
   (let* ((args (arglist (intern (string (code self)) :om)))
-         (numins (min-inp-number-from-arglist args)) (i -1))
+         (numins (min-inp-number-from-arglist args)) 
+         (i -1))
+    (print (format nil "numins = ~A" numins))
     (mapcar #'(lambda (name) 
                 (make-instance 'omin
                                :indice (incf i)
-                               :name (string name))) 
+                               :name (print (string name)))) 
             (subseq args 0 numins))))
      
 ;; =================================
@@ -145,6 +146,8 @@
 
 (defmethod patch2abs ((self OMpythonPatch))
    "Cons a new instance of 'OMPatchAbs from the patch 'self'."
+    
+
    (let ((newabs (make-instance 'OMpythonPatchAbs :name (name self)  :icon 1997)))
      (setf (python-exp newabs) (python-exp self))
      (set-icon-pos newabs (get-icon-pos self))
@@ -155,9 +158,10 @@
 
 (defmethod OpenEditorframe ((self OMpythonPatch))
    "Open the patch editor, this method open too all persistantes objects referenced into the patch."
-   (declare (special *om-current-persistent*))
-   (load-patch self)
-   (or (editorframe self)
-       (if (get-python-exp (python-exp self))
-           (edit-existing-lambda-expression self)
-         (edit-new-lambda-expression self))))
+   
+    (om-print self "OpenEditorframe :: ")
+    (om::om-cmd-line "code ")
+   
+   
+   
+   (declare (special *om-current-persistent*)))

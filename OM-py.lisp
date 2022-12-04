@@ -19,6 +19,7 @@
             "sources/package"
             "sources/OM/OM-py"
             "sources/OM/OM-Functions"
+            "sources/OM/pythonpatcheditor"
             ))
 
 ; ========================================

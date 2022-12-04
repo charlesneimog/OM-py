@@ -37,27 +37,30 @@
         
         ((equal funname 'py)
             (progn 
-
-                (print "Activando Function")
                 (setf newbox (omNG-make-new-boxcall 
                         (make-instance 'OMpythonPatchAbs 
                             :name (mk-unique-name scroller "PythonFunction")
-                            :icon 1997)
+                            :icon 1997) ;; Need to be inside the OM Folder
                         pos 
                         (mk-unique-name scroller "PythonFunction")))))
 
+        ;; ===================================================================
 
        ((member funname *spec-new-boxes-types*)
         (setf newbox (get-new-box-from-type funname pos scroller)))
+
        ((equal funname 'maquette)
         (setf newbox (omNG-make-new-boxcall 
                       (make-instance 'OMMaqAbs 
                                      :name (mk-unique-name scroller "mymaquette") :icon 265) 
                       pos 
                       (mk-unique-name scroller "mymaquette"))))
+
+
        ((equal funname 'comment)
         (setf newbox (omNG-make-new-boxcall funname pos "comment"))
         (setf (reference newbox) (or text "Type your comments here")))
+        
        ((and (find-class funname nil) (not (equal funname 'list)) (omclass-p (class-of (find-class funname nil))))
         (cond ((om-shift-key-p)
                (setf newbox  (omNG-make-new-boxcall-slots (find-class funname nil) pos (mk-unique-name scroller "slots"))))
@@ -88,3 +91,58 @@
       (when (equal funname 'comment)
         (reinit-size (car (frames newbox))))  
     newbox))  ;;; so validity of string as a new object can be tested
+
+
+; =================================================================================================
+; =================================================================================================
+
+(defmethod om-get-menu-context ((self PatchPanel))
+  (let ((posi (om-mouse-position self))
+        (sel (car (get-selected-picts self))))
+    (if sel
+        (get-pict-menu-context sel self)
+      (list 
+       (om-new-leafmenu "Comment" #'(lambda () 
+                                      (let ((newbox (omNG-make-new-boxcall 'comment posi "comment")))
+                                        (when newbox
+                                          (omG-add-element self (make-frame-from-callobj newbox))
+                                          (reinit-size (car (frames  newbox)))))))
+       (om-new-leafmenu "Picture" #'(lambda () 
+                                      (make-bg-pict self posi)))
+       (list 
+        (om-package-fun2menu *om-package-tree* nil #'(lambda (f) (add-box-from-menu f posi)))
+        (om-package-classes2menu *om-package-tree* nil #'(lambda (c) (add-box-from-menu c posi)))
+        )
+       (list 
+        (om-new-menu "Internal..." 
+                     (om-new-leafmenu "Patch" #'(lambda () (omG-add-element self (make-frame-from-callobj 
+                                                                                  (omNG-make-new-boxcall 
+                                                                                   (make-instance 'OMPatchAbs :name "mypatch" :icon 210)
+                                                                                   posi (mk-unique-name self "mypatch"))))))
+                     (om-new-leafmenu "Maquette" #'(lambda () (omG-add-element self (make-frame-from-callobj 
+                                                                                     (omNG-make-new-boxcall 
+                                                                                      (make-instance 'OMMaqAbs :name "mymaquette" :icon 265)
+                                                                                      posi (mk-unique-name self "mymaquette"))))))
+                     (om-new-leafmenu "Loop" #'(lambda () (add-box-from-menu (fdefinition 'omloop) posi)))
+                     (om-new-leafmenu "Python Function" #'(lambda () (omG-add-element self 
+                                                                                    (make-frame-from-callobj 
+                                                                                     (omNG-make-new-boxcall 
+                                                                                      (make-instance 'OMPythonPatchAbs :name "pythonfunction" :icon 1997)
+                                                                                      posi (mk-unique-name self "pythonfunction"))))))
+                     (om-new-leafmenu "Lisp Function" #'(lambda () (omG-add-element self 
+                                                                                    (make-frame-from-callobj 
+                                                                                     (omNG-make-new-boxcall 
+                                                                                      (make-instance 'OMLispPatchAbs :name "lispfunction" :icon 123)
+                                                                                      posi (mk-unique-name self "lispfunction"))))))))
+       (list
+        (om-new-leafmenu "Input" #'(lambda () (add-input self posi)) nil (add-input-enabled self 'in))
+        (om-new-leafmenu "Output" #'(lambda () (add-output self posi)) nil (add-output-enabled self 'out))
+        (om-new-menu "TemporalBoxes" 
+                     (om-new-leafmenu "Self Input" #'(lambda () (add-special-box 'tempin posi self)) nil (add-input-enabled self 'tempin))
+                     (om-new-leafmenu "Maq. Self Input" #'(lambda () (add-special-box 'maq-tempin posi self)) nil (add-input-enabled self 'maq-tempin))
+                     (om-new-leafmenu "Temporal Output" #'(lambda () (add-special-box 'tempout posi self)) nil (add-output-enabled self 'tempout)))
+        )
+       (om-new-leafmenu "Last Saved"  #'(lambda () (window-last-saved (editor self))) nil (if (and 
+                                                                                               (mypathname (object self))
+                                                                                               (not (subtypep (class-of self) 'methodpanel))) t nil))
+       ))))
