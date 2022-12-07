@@ -27,8 +27,8 @@
 (defclass OMBox-run-py (OMBoxAbstraction) 
     (
       (wsl :initform nil :accessor wsl)
-      ;(inputs :initform nil :accessor inputs)
-      ;(outputs :initform nil :accessor outputs)
+      (inputs :initform nil :accessor inputs)
+      (outputs :initform nil :accessor outputs)
     ))
 
 
@@ -191,21 +191,28 @@ to_om(list_of_numbers)
 (defmethod externalized-type ((self run-py-f)) 'OMpyFunctionFile)
 (defmethod externalized-icon ((self run-py-f)) :py-script)
 
+
+;; ======================================================
 (defmethod make-new-om-doc ((type (eql :pyfun)) name)
   (make-instance 'OMpyFunctionFile
                  :name name
                  :text *default-lisp-function-text*))
 
+
+;; ======================================================
 (defmethod save-document ((self OMpyFunctionFile))
   (call-next-method)
   (update-py-fun self))
 
+;; ======================================================
 (defmethod omng-save-relative ((self OMpyFunctionFile) ref-path)
   `(:textfun-from-file
     ,(if (mypathname self)
          (omng-save (om::om-print (relative-pathname (mypathname self) ref-path) "test"))
        (omng-save (om::om-print (pathname (name self))) "test"))))
 
+
+;; ======================================================
 
 (defmethod om-load-from-id ((id (eql :textfun-from-file)) data)
   (let* ((path (omng-load (car data)))
@@ -335,23 +342,32 @@ to_om(list_of_numbers)
 (defmethod om-lisp::save-operation-enabled ((self run-py-function-editor-window)) nil)
 
 (defmethod open-editor-window ((self run-py-function-editor))
-  (if (and (window self) (om-window-open-p (window self)))
-      (om-select-window (window self))
-    (let* ((pyf (object self))
-           (edwin (om-lisp::om-open-text-editor
-                   :contents (text pyf)
-                   :lisp t
-                   :class 'run-py-function-editor-window
-                   :title (window-name-from-object pyf)
-                   :x (and (window-pos pyf) (om-point-x (window-pos pyf)))
-                   :y (and (window-pos pyf) (om-point-y (window-pos pyf)))
-                   :w (and (window-size pyf) (om-point-x (window-size pyf)))
-                   :h (and (window-size pyf) (om-point-y (window-size pyf)))
-                   )))
-      (setf (editor edwin) self)
-      (setf (window self) edwin)
-      (om-lisp::text-edit-window-activate-callback edwin t) ;; will (re)set the menus with the editor in place
-      edwin)))
+  ; get the ombox-run-py from self
+  (print (g-components self)))
+
+
+          
+
+
+  
+
+  ; (if (and (window self) (om-window-open-p (window self)))
+  ;     (om-select-window (window self))
+  ;   (let* ((pyf (object self))
+  ;          (edwin (om-lisp::om-open-text-editor
+  ;                  :contents (print (text pyf))
+  ;                  :lisp nil
+  ;                  :class 'run-py-function-editor-window
+  ;                  :title (window-name-from-object pyf)
+  ;                  :x (and (window-pos pyf) (om-point-x (window-pos pyf)))
+  ;                  :y (and (window-pos pyf) (om-point-y (window-pos pyf)))
+  ;                  :w (and (window-size pyf) (om-point-x (window-size pyf)))
+  ;                  :h (and (window-size pyf) (om-point-y (window-size pyf)))
+  ;                  )))
+  ;     (setf (editor edwin) self)
+  ;     (setf (window self) edwin)
+  ;     (om-lisp::text-edit-window-activate-callback edwin t) ;; will (re)set the menus with the editor in place
+  ;     edwin)))
 
 (defmethod om-lisp::text-editor-window-menus ((self run-py-function-editor-window))
   (om-menu-items (editor self)))

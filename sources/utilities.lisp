@@ -438,15 +438,23 @@
 
 
 ;; ========================
+(defmethod! py-install-file ((module pathname))
+:icon 'py-f
+:doc "This object will run 'python setup.py install' from the enviroment"
 
-(defmethod! py-add-ext-modules (&key (import nil) (from_import nil) (import* nil))
+(om::om-cmd-line (format nil "~d && python ~d build" om-py::*activate-virtual-enviroment* (namestring module)))
+(om::om-cmd-line (format nil "~d && python ~d install" om-py::*activate-virtual-enviroment* (namestring module))))
+
+;; ========================
+
+(defmethod! py-add-ext-modules (&key (imported nil) (from_import nil) (import* nil))
 :initvals '("math" ("math" "sum") "math")
 :indoc '("import YOURMODULE" "from YOURMODULE import YOURFUNCTION" "import YOURMODULE*") 
 :icon 'py-f
 :doc "This object will add external modules to the python environment."
 
 ;; TODO: COLOCAR UM MODO DE SEMPRE RODAR O PIP UPGRADE PIP
-
+      
 (if   
       (or (= 2 (list-depth from_import)) (null from_import))
             from_import
@@ -456,7 +464,7 @@
 
 (let* (
       (import-modules (om::x-append 
-                                    (om::list! import)
+                                    (om::list! imported)
                                     (mapcar (lambda (x) (car x)) from_import)
                                     (om::list! import*)))
       (verification-module 
@@ -493,7 +501,7 @@ from om_py import to_om
                                                       (om::om-message-dialog (format nil "The module ~d was not found, check the spelling!" not_installed))
                                                       (om::abort-eval)))))
       (let* (
-            (format-import (loop :for modules :in (om::list! import) :collect (format nil "
+            (format-import (loop :for modules :in (om::list! imported) :collect (format nil "
 import ~d" modules)))
             (format-from_import (loop for modules :in (om::list! from_import) :collect (format nil "
 from ~d import ~d" (car modules) (second modules))))
@@ -566,8 +574,7 @@ from om_py import to_om" format-import format-from_import format_import*))))
             (pyScript (om-py::concatstring (om::x-append pyVar readScript)))
             (om-pyClass (om::make-value 'python (list (list :code pyScript)))))
             (if thread
-                  (mp:process-run-function "Python" ()
-                        (lambda () (om-py::run-py om-pyClass)))
+                  (mp:process-run-function "Python" () (lambda () (om-py::run-py om-pyClass)))
                   (om-py::run-py om-pyClass))))
 
 ; ------------------------------------------------------------
