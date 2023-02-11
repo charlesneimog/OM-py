@@ -106,12 +106,17 @@
             (symbol (if (equal type 't) " True" type)) 
             ('om::pure-data (py-list->string  (list (namestring (om::pd-path type))))) ;; It will need of OM-CKN????????????? I think not!
             (pathname  (py-list->string  (list (namestring type))))
-            ((unsigned-byte 16) (write-to-string type))
+            ('(unsigned-byte 16) (write-to-string type))
+            ('(unsigned-byte 4) (write-to-string type))
             
-            (otherwise (progn 
-                                    (om::om-print "format2python: type not found! Please report to charlesneimog@outlook.com" "ERROR")
+            (otherwise 
+                        (if (equal (car (type-of type)) 'unsigned-byte)
                                     (write-to-string type)
-                                    ))))
+                                    (progn 
+                                                (om::om-print "format2python: type not found! Please report to charlesneimog@outlook.com" "ERROR")
+                                                (om::om-print (format nil "Received ~d format" (type-of type)) "ERROR")
+                                                (write-to-string type)
+                                                )))))
 
 ;; ================= Some Functions =====================
 
