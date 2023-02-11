@@ -23,7 +23,6 @@
 
 ;; ========================================================================
 
-
 (defclass OMBox-run-py (OMBoxAbstraction) 
     (
       (wsl :initform nil :accessor wsl)
@@ -319,118 +318,15 @@ to_om(list_of_numbers)
 ;;;===================
 
 (defclass run-py-function-editor (OMDocumentEditor) ())
-
 (defmethod object-has-editor ((self run-py-f)) t)
 (defmethod get-editor-class ((self run-py-f)) 'run-py-function-editor)
-
-;;; nothing, e.g. to close when the editor is closed
 (defmethod delete-internal-elements ((self run-py-f)) nil)
-
-;;; maybe interesting to make this inherit from OMEditorWindow..
-
 (defclass run-py-function-editor-window (om-lisp::om-text-editor-window)
   ((editor :initarg :editor :initform nil :accessor editor)))
 
-(defmethod window-name-from-object ((self run-py-f-Internal))
-  (format nil "~A  [internal py function]" (name self)))
-
-(defmethod om-lisp::type-filter-for-text-editor ((self run-py-function-editor-window))
-  '("py function" "*.py"))
-
-;;; this will disable the default save/persistent behaviours of the text editor
-;;; these will be handled following the model of OMPatch
-(defmethod om-lisp::save-operation-enabled ((self run-py-function-editor-window)) nil)
 
 (defmethod open-editor-window ((self run-py-function-editor))
-  ; get the ombox-run-py from self
-  (print (g-components self)))
-
-
-          
-
-
-  
-
-  ; (if (and (window self) (om-window-open-p (window self)))
-  ;     (om-select-window (window self))
-  ;   (let* ((pyf (object self))
-  ;          (edwin (om-lisp::om-open-text-editor
-  ;                  :contents (print (text pyf))
-  ;                  :lisp nil
-  ;                  :class 'run-py-function-editor-window
-  ;                  :title (window-name-from-object pyf)
-  ;                  :x (and (window-pos pyf) (om-point-x (window-pos pyf)))
-  ;                  :y (and (window-pos pyf) (om-point-y (window-pos pyf)))
-  ;                  :w (and (window-size pyf) (om-point-x (window-size pyf)))
-  ;                  :h (and (window-size pyf) (om-point-y (window-size pyf)))
-  ;                  )))
-  ;     (setf (editor edwin) self)
-  ;     (setf (window self) edwin)
-  ;     (om-lisp::text-edit-window-activate-callback edwin t) ;; will (re)set the menus with the editor in place
-  ;     edwin)))
-
-(defmethod om-lisp::text-editor-window-menus ((self run-py-function-editor-window))
-  (om-menu-items (editor self)))
-
-(defmethod om-lisp::om-text-editor-modified ((self run-py-function-editor-window))
-  (touch (object (editor self)))
-  (setf (text (object (editor self)))
-        (om-lisp::om-get-text-editor-text self))
-  (report-modifications (editor self))
-  (call-next-method))
-
-(defmethod om-lisp::update-window-title ((self run-py-function-editor-window) &optional (modified nil modified-supplied-p))
-  (om-lisp::om-text-editor-window-set-title self (window-name-from-object (object (editor self)))))
-
-(defmethod om-lisp::om-text-editor-check-before-close ((self run-py-function-editor-window))
-  (ask-save-before-close (object (editor self))))
-
-(defmethod om-lisp::om-text-editor-resized ((win run-py-function-editor-window) w h)
-  (when (editor win)
-    (setf (window-size (object (editor win))) (omp w h))))
-
-(defmethod om-lisp::om-text-editor-moved ((win run-py-function-editor-window) x y)
-  (when (editor win)
-    (setf (window-pos (object (editor win))) (omp x y))))
-
-;;; update-py-fun at closing the window
-(defmethod om-lisp::om-text-editor-destroy-callback ((win run-py-function-editor-window))
-  (let ((ed (editor win)))
-    (editor-close ed)
-    (update-py-fun (object ed))
-    (setf (window ed) nil)
-    (setf (g-components ed) nil)
-    (unless (references-to (object ed))
-      (unregister-document (object ed)))
-    (call-next-method)))
-
-;;; update-py-fun at loosing focus
-(defmethod om-lisp::om-text-editor-activate-callback ((win run-py-function-editor-window) activate)
-  (when (editor win)
-    (when (equal activate nil)
-      (update-py-fun (object (editor win))))
-    ))
-
-;;; called from menu
-(defmethod copy-command ((self run-py-function-editor))
-  #'(lambda () (om-lisp::text-edit-copy (window self))))
-
-(defmethod cut-command ((self run-py-function-editor))
-  #'(lambda () (om-lisp::text-edit-cut (window self))))
-
-(defmethod paste-command ((self run-py-function-editor))
-  #'(lambda () (om-lisp::text-edit-paste (window self))))
-
-(defmethod select-all-command ((self run-py-function-editor))
-  #'(lambda () (om-lisp::text-select-all (window self))))
-
-(defmethod undo-command ((self run-py-function-editor))
-  #'(lambda () (om-lisp::text-edit-undo (window self))))
-
-(defmethod font-command ((self run-py-function-editor))
-  #'(lambda () (om-lisp::change-text-edit-font (window self))))
-
-;; Add this in the menu
+(open-vscode (om::list! (references-to (object self)))))
 
 
 (ensure-directories-exist (tmpfile " " :subdirs "\om-py")) ;; Create om-py temp folder
